@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="eb36c85d-c15e-42f3-84e4-a16d3505d2ec" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/../Finetune_demo/Utils/argpaser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Augmentation/text_Augmentation.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/.idea/text_cluster.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/data/dev.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/data/event_schema.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/data/event_schema.pdf" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/data/test2.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/data/train.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/data_pre_process/pre_processes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/data_pre_process/tools.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/model/Bert2cluster.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/pretrained_model/chinese_roberta_wwm_ext/config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/pretrained_model/chinese_roberta_wwm_ext/vocab.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/text_cluster.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/utils/arguments_parse.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Cluster_bert_auto_enconding/utils/logger.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/.idea/PRGC-main.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/1.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/data/NYT/rel2id.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/data/NYT/test_triples.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/data/NYT/train_triples.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/data/NYT/val_triples.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/data/process4detailed.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/dataloader.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/dataloader_utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/evaluate.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/metrics.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/model.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/optimization.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/script/evaluate.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/script/train.sh" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/train.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../IE_joint_decoder/utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/.idea/Classsify_bert.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/data/dev.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/data/test2.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/data/train.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/data_pre_process/pre_processes.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/data_pre_process/tools.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/metrics/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/metrics/metrics.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/model/Bert2classify.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/pretrained_model/chinese_roberta_wwm_ext/config.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/pretrained_model/chinese_roberta_wwm_ext/vocab.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/train.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/utils/arguments_parse.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../classsify_bert/utils/logger.py" beforeDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FUSProjectUsageTrigger">
+    <session id="1719567588">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="3" />
+          <entry key="project.open.time.0" value="1" />
+          <entry key="project.open.time.1" value="1" />
+          <entry key="project.open.time.5" value="1" />
+          <entry key="project.opened" value="3" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.open">
+        <counts>
+          <entry key="8" value="1" />
+          <entry key="html" value="1" />
+          <entry key="json" value="8" />
+          <entry key="pip" value="1" />
+          <entry key="py" value="52" />
+          <entry key="spm" value="2" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.open">
+        <counts>
+          <entry key="HTML" value="1" />
+          <entry key="JSON" value="8" />
+          <entry key="PLAIN_TEXT" value="4" />
+          <entry key="Python" value="52" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.extensions.edit">
+        <counts>
+          <entry key="Python Console" value="537" />
+          <entry key="json" value="30" />
+          <entry key="py" value="1856" />
+        </counts>
+      </usages-collector>
+      <usages-collector id="statistics.file.types.edit">
+        <counts>
+          <entry key="JSON" value="30" />
+          <entry key="Python" value="2393" />
+        </counts>
+      </usages-collector>
+    </session>
+    <session id="-877842233">
+      <usages-collector id="statistics.lifecycle.project">
+        <counts>
+          <entry key="project.closed" value="1" />
+          <entry key="project.open.time.1" value="1" />
+          <entry key="project.opened" value="1" />
+        </counts>
+      </usages-collector>
+    </session>
+  </component>
+  <component name="FileEditorManager">
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/pre_process_data/data_pre.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="133">
+              <caret line="11" column="21" selection-start-line="11" selection-start-column="21" selection-end-line="11" selection-end-column="21" />
+              <folding>
+                <element signature="e#0#11#0" expanded="true" />
+                <marker date="1681902218124" expanded="true" signature="1127:1136" ph="..." />
+                <marker date="1681902218124" expanded="true" signature="2116:3776" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/demo.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="375">
+              <caret line="184" column="17" selection-start-line="184" selection-start-column="17" selection-end-line="184" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utils/arg.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="513">
+              <caret line="28" column="22" selection-start-line="28" selection-start-column="22" selection-end-line="28" selection-end-column="22" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/train.py" />
+        <option value="$PROJECT_DIR$/utils/argparse.py" />
+        <option value="$PROJECT_DIR$/data/train.json" />
+        <option value="$PROJECT_DIR$/utils/log.py" />
+        <option value="$PROJECT_DIR$/Helsinki-NLP/config.json" />
+        <option value="$PROJECT_DIR$/pre_process_data/data_pre.py" />
+        <option value="$PROJECT_DIR$/model/model.py" />
+        <option value="$PROJECT_DIR$/1.py" />
+        <option value="$PROJECT_DIR$/utils/arg.py" />
+        <option value="$PROJECT_DIR$/demo.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="-22" />
+    <option name="y" value="120" />
+    <option name="width" value="1346" />
+    <option name="height" value="740" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="Translation" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Translation" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Translation" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Translation" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Translation" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Translation" type="462c0819:PsiDirectoryNode" />
+              <item name="Helsinki-NLP" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Translation" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Translation" type="462c0819:PsiDirectoryNode" />
+              <item name="model" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Translation" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Translation" type="462c0819:PsiDirectoryNode" />
+              <item name="pre_process_data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Translation" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Translation" type="462c0819:PsiDirectoryNode" />
+              <item name="utils" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Python.demo">
+    <configuration name="1" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Translation" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/1.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="arg" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Translation" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/utils/arg.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="argparse" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Translation" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/utils" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="F:\git_work_project\work_project\Translation\utils\arg.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="data_pre" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Translation" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/pre_process_data" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/pre_process_data/data_pre.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="demo" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="Translation" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/demo.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.argparse" />
+      <item itemvalue="Python.arg" />
+      <item itemvalue="Python.data_pre" />
+      <item itemvalue="Python.demo" />
+      <item itemvalue="Python.1" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.demo" />
+        <item itemvalue="Python.1" />
+        <item itemvalue="Python.data_pre" />
+        <item itemvalue="Python.arg" />
+        <item itemvalue="Python.argparse" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="eb36c85d-c15e-42f3-84e4-a16d3505d2ec" name="Default Changelist" comment="" />
+      <created>1681870034700</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1681870034700</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24330357" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32840723" />
+      <window_info anchor="bottom" id="Run" order="2" weight="0.4811166" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.5862069" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32840723" />
+      <window_info anchor="bottom" id="Version Control" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Terminal" order="8" weight="0.6141215" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32840723" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <default-breakpoints>
+        <breakpoint type="python-exception">
+          <properties notifyOnTerminate="true" exception="BaseException">
+            <option name="notifyOnTerminate" value="true" />
+          </properties>
+        </breakpoint>
+      </default-breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://D:/Pycharm/anaconda3/Lib/json/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="113">
+          <caret line="337" selection-start-line="337" selection-end-line="337" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/utils/versions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="113">
+          <caret line="50" selection-start-line="50" selection-end-line="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/typing.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="842" selection-start-line="842" selection-end-line="842" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/data/train.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="95">
+          <caret line="5" lean-forward="true" selection-start-line="5" selection-end-line="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/torch/utils/data/_utils/collate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="113">
+          <caret line="54" selection-start-line="54" selection-end-line="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/models/auto/auto_factory.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="113">
+          <caret line="474" selection-start-line="474" selection-end-line="474" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/log.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="247">
+          <caret line="13" selection-start-line="13" selection-end-line="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/torch/utils/data/dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="94">
+          <caret line="291" selection-start-line="291" selection-end-line="291" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/configuration_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="94">
+          <caret line="259" selection-start-line="259" selection-end-line="259" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/models/auto/modeling_auto.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="770">
+          <caret line="1067" selection-start-line="1067" selection-end-line="1067" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Helsinki-NLP/config.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-942">
+          <caret line="4" column="27" lean-forward="true" selection-start-line="4" selection-start-column="27" selection-end-line="4" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/models/marian/tokenization_marian.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1502">
+          <caret line="157" selection-start-line="157" selection-end-line="157" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/modeling_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="94">
+          <caret line="2059" selection-start-line="2059" selection-end-line="2059" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/torch/utils/data/dataloader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="91">
+          <caret line="434" selection-start-line="434" selection-end-line="434" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/utils/import_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="99">
+          <caret line="1037" selection-start-line="1037" selection-end-line="1037" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/tokenization_utils_base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="110">
+          <caret line="236" selection-start-line="236" selection-end-line="236" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/torch/utils/data/sampler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="229" selection-start-line="229" selection-end-line="229" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="91">
+          <caret line="267" selection-start-line="267" selection-end-line="267" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/models/marian/modeling_marian.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="186">
+          <caret line="512" column="39" selection-start-line="512" selection-start-column="39" selection-end-line="512" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/transformers/models/auto/tokenization_auto.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-4604">
+          <caret line="488" column="6" selection-start-line="488" selection-start-column="6" selection-end-line="488" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/torch/nn/modules/module.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="726" selection-start-line="726" selection-end-line="726" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Helsinki-NLP/source.spm">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Helsinki-NLP/target.spm">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/model/model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="361">
+          <caret line="19" lean-forward="true" selection-start-line="19" selection-end-line="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="133" column="5" selection-start-line="127" selection-end-line="142" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/report.html" />
+    <entry file="file://$PROJECT_DIR$/3.8" />
+    <entry file="file://$PROJECT_DIR$/pip" />
+    <entry file="file://$PROJECT_DIR$/1.py" />
+    <entry file="file://$PROJECT_DIR$/pre_process_data/data_pre.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="133">
+          <caret line="11" column="21" selection-start-line="11" selection-start-column="21" selection-end-line="11" selection-end-column="21" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+            <marker date="1681902218124" expanded="true" signature="1127:1136" ph="..." />
+            <marker date="1681902218124" expanded="true" signature="2116:3776" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/utils/arg.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="513">
+          <caret line="28" column="22" selection-start-line="28" selection-start-column="22" selection-end-line="28" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/demo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="375">
+          <caret line="184" column="17" selection-start-line="184" selection-start-column="17" selection-end-line="184" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
