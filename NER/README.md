@@ -1,9 +1,7 @@
 # PyTorch_BERT_Pipeline_IE
 
 # 概述
-1、复习论文《A Frustratingly Easy Approach for Joint Entity and Relation Extraction》<br>
-2、模型的具体思路描述可以见[知乎](https://zhuanlan.zhihu.com/p/369951155)。<br>
-3、训练数据来自于百度的[2021LIC语言与计算智能竞赛](https://aistudio.baidu.com/aistudio/competition/detail/65)，没有上传数据，可以自行到官网下载哦。<br>
+1、复习论文《A Frustratingly Easy Approach for Joint Entity and Relation Extraction》
 
 # 环境要求
 ```
