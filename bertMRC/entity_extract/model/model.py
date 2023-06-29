@@ -30,11 +30,13 @@ class bertMRC(nn.Module):
         self.sigmoid=nn.Sigmoid()
 
     def forward(self, input_ids, input_mask, input_seg, is_training=False):
-        bert_output = self.roberta_encoder(input_ids=input_ids, attention_mask=input_mask, token_type_ids=input_seg)  # (bsz, seq, dim)
+        bert_output = self.roberta_encoder(input_ids=input_ids,
+                                           attention_mask=input_mask,
+                                           token_type_ids=input_seg)  # (bsz, seq, dim)
         encoder_rep = bert_output[0]
 
-        s_startlogits=self.sigmoid(self.s_startlayer(encoder_rep))
-        s_endlogits=self.sigmoid(self.s_endlayer(encoder_rep))
+        s_startlogits = self.sigmoid(self.s_startlayer(encoder_rep))
+        s_endlogits   = self.sigmoid(self.s_endlayer(encoder_rep))
 
         o_startlogits=self.sigmoid(self.o_startlayer(encoder_rep))
         o_endlogits=self.sigmoid(self.o_endlayer(encoder_rep))

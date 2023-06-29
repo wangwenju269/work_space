@@ -14,19 +14,21 @@ import unicodedata, re
 
 def get_tokenizer():
     """添加特殊中文字符和未使用的token【unused1】"""
-    added_token=['[unused'+str(i+1)+']' for i in range(99)]
+    added_token=['[unused'+str(i+1)+']' for i in range(55)]
     # path=args.pretrained_model_path
-    tokenizer = AutoTokenizer.from_pretrained(args.pretrained_model_path,additional_special_tokens=added_token)
+    tokenizer = AutoTokenizer.from_pretrained(args.pretrained_model_path,
+                                              additional_special_tokens=added_token)
     special_tokens_dict = {'additional_special_tokens':['”','“']}
     tokenizer.add_special_tokens(special_tokens_dict)
     return tokenizer
 
 tokenizer=get_tokenizer()
 
+
+
 class token_rematch:
     def __init__(self):
         self._do_lower_case = True
-
 
     @staticmethod
     def stem(token):
@@ -87,7 +89,7 @@ def search(pattern, sequence):
     for i in range(len(sequence)):
         if sequence[i:i + n] == pattern:
             return i
-    return 0
+    return -1
 
 
 def load_schema(file_path=args.schema_path):
@@ -95,48 +97,25 @@ def load_schema(file_path=args.schema_path):
         lines=f.readlines() 
         schema_list=[]
         predicate_list=[]
-        s_entity=[]
-        o_entity=[]
-        otype={}
-        ptype={}
+        entity=[]
         for line in lines:
             data=json.loads(line)
-            if data['subject_type'] not in s_entity:
-                    s_entity.append(data['subject_type'])
-            for k,v in data['object_type'].items():
+            if data['subject_type'] not in entity:
+                    entity.append(data['subject_type'])
+            for _,v in data['object_type'].items():
                 predicate_list.append(data['predicate']+'|'+v)
-                otype[data['predicate']+'|'+v]=k
-                ptype[data['predicate']+'|'+v]={'subject_type':data['subject_type'],'object_type':v}
-                if v not in o_entity:
-                    o_entity.append(v)
-
-        s_entity_type={}
-        s=1
-        for i,e in enumerate(s_entity):
-            s_entity_type[e]=(f'[unused{str(2*(s+1))}]',f'[unused{str(2*(s+1)+1)}]')
-        
-
-        o_entity_type={}
-        o=10
-        for i,e in enumerate(o_entity):
-            o_entity_type[e]=(f'[unused{str(2*(o+len(s_entity_type)+1))}]',f'[unused{str(2*(o+len(s_entity_type)+1)+1)}]')
-
-
+                if v not in entity:
+                    entity.append(v)
+        print(len(entity))
         predicate2id={}
         id2predicate={}
 
         for i,v in enumerate(predicate_list):
-            predicate2id[v]=i+1
-            id2predicate[i+1]=v
-
-        return predicate2id,id2predicate,s_entity_type,o_entity_type,otype,ptype
-
-
+          predicate2id[v]=i+1
+          id2predicate[i+1]=v
+        return predicate2id,id2predicate
 
 
 if __name__=='__main__':
     schema=load_schema()
     print(len(schema))
-    # cl=token_rematch()
-    # d=cl.rematch(s,c)
-    # print(d)

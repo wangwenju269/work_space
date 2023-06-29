@@ -2,7 +2,6 @@ import torch
 from torch import nn
 device = torch.device('cuda')
 
-
 class metrics_func(nn.Module):
     def __init__(self):
         super().__init__()
