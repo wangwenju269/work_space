@@ -26,7 +26,7 @@ loader = UnstructuredWordDocumentLoader("example_data/fake.docx")
 data = loader.load()
 ```
 
-```
+```python
 # 将长文本切分若干个segment篇落
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 "实例化对象:每个篇落 chunk_size 字符，片落前后重叠为 chunk_overlop"
@@ -46,7 +46,7 @@ for d  in split_document:
 
 2.针对用户私有化的数据，为避免数据泄露，自己提出一种数据标注方案，完全不用依赖label_studio。
 
-```
+```python
 1. 在公开数据集tax上分析label_studio平台的标注模式
 
 tax_data_file = './tax/train.txt'
@@ -121,10 +121,12 @@ if start != -1:
 ```
 
 #### 总结：
-      1. 正则模式标注待提取target的span跨度；
-      2. 分别对文档和target 进行分词处理，文档：input_ids， target：text_ids 
-      3.  text_ids 在 input_ids 序列中，确定 start end 的首尾 id值 
-      4. 转换UIEX模型所需的样本example形式；
+```python
+  1. 正则模式标注待提取target的span跨度；
+  2. 分别对文档和target 进行分词处理，文档：input_ids， target：text_ids 
+  3.  text_ids 在 input_ids 序列中，确定 start end 的首尾 id值 
+  4. 转换UIEX模型所需的样本example形式；
+```
 
 ### 模型微调
 
@@ -134,7 +136,7 @@ if start != -1:
 
 ### 推理测试
 
-```
+```python
 1. 第一种方案：
    Taskflow ： 当schema待提取数量集合过多时，调用 Taskflow 运行性能低，很耗时；
 2. 第二种方案： 调用 底座模型 ERNIE_layout 模型
