@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/PyTorch_BERT_Pipeline_IE-main.iml" filepath="$PROJECT_DIR$/.idea/PyTorch_BERT_Pipeline_IE-main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/entity_extract.iml" filepath="$PROJECT_DIR$/.idea/entity_extract.iml" />
     </modules>
   </component>
 </project>
