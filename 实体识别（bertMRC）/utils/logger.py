@@ -1,6 +1,4 @@
 # -*- coding:utf-8 -*-
-# @Time  : 2020/11/3 14:22
-# @Author: yangping
 
 import logging
 import datetime

@@ -1,9 +1,5 @@
 # -*- coding:utf-8 -*-
-# @Time  : 2020/11/3 14:22
-# @Author: yangping
-
 import argparse
-
 parser = argparse.ArgumentParser(description="train")
 parser.add_argument("--train_path", type=str, default="data/duie_train.json",help="train file")
 parser.add_argument("--dev_path", type=str, default="data/duie_dev.json",help="test file")
