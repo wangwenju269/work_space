@@ -12,21 +12,6 @@ transformers>=3.4.0
 ```
 ### 数据来源
 
-```
-class binary_cross_entropy(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.loss_func = torch.nn.BCELoss()
-
-    def forward(self,y_pred, y_true):
-        y_pred = y_pred.float()
-        y_true = y_true.float()
-        y_pred = y_pred.view(size=(-1,))
-        y_true = y_true.view(size=(-1,))
-        loss = self.loss_func(input=y_pred, target=y_true)
-        return loss
-```
-
 + 数据形式样例：{`"text"`: "郭造卿（1532—1593），字建初，号海岳，福建福清县化南里人（今福清市人），郭遇卿之弟，郭造卿少年的时候就很有名气，曾游学吴越", `"spo_list"`: [{`"predicate"`: "号", `"object_type"`: {"@value": "Text"}, `"subject_type"`: "历史人物", `"object"`: {"@value": "海岳"}, `"subject"`: "郭造卿"}]}
 + 数据说明：`"predicate"`：主体与客体间关系，`"object_type"`：客体类型，`"subject_type"`:主体类型， `"subject"`、`"object"`: 分别表示主体，客体；
 
