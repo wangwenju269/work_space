@@ -12,7 +12,9 @@ from utils.logger import logger
 from data_pre_process import pre_processes
 from metrics import metrics
 
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class WarmUp_LinearDecay:
     def __init__(self, optimizer: optim.AdamW, init_rate, warm_up_epoch, decay_epoch, min_lr_rate=1e-8):
         self.optimizer = optimizer

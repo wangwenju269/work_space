@@ -11,11 +11,18 @@ class Bert_classify(BertPreTrainedModel):
         self.bert = BertModel(config= self.config)
         self.bert.resize_token_embeddings(len(tokenizer))
         self.classifier = nn.Linear(self.hidden_size, self.num_class)
-
+        #[768,9]
     def forward(self, input_ids,attention_mask,token_type_ids):
         output = self.bert(input_ids=input_ids,attention_mask=attention_mask,
                            token_type_ids=token_type_ids)
         cls_hidden_state = output.pooler_output
+        # [bs, hidden]
+        # size:[16,  768] * [768,9] = [16, 9]
+        # [16,1]
+        # [16,9]
+
         logits = self.classifier(cls_hidden_state)
+        # [bs, num]  [16,9]
+
         return logits
 

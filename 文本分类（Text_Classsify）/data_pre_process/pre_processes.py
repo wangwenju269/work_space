@@ -43,9 +43,11 @@ class myDataset(Dataset):
         return one_data
 
     def encoder(self,sentence):
-        encode_dict = tokenizer.encode_plus(sentence, truncation=True,
-                                                       max_length=args.max_length,
-                                                       padding='max_length')
+        encode_dict = tokenizer.encode_plus(sentence,
+                                            truncation=True,
+                                            max_length=args.max_length,
+                                            padding='max_length')
+
         input_ids = encode_dict['input_ids']
         token_type_ids = encode_dict['token_type_ids']
         attention_mask = encode_dict['attention_mask']
@@ -67,6 +69,7 @@ class My_Dataset():
                 classify_name = l['event_list'][0]['class']
                 text.append({'text': l['text'],'label':label2id[classify_name]})
         return text
+
 
     def __len__(self):
         return len(self.data)
