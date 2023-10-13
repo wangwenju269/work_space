@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="cdf1d33d-251b-4b7f-8e62-484609246749" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../微调Finetune_Demo/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../微调Finetune_Demo/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="cdf1d33d-251b-4b7f-8e62-484609246749" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,9 +44,10 @@
     <session id="786716617">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="1" />
+          <entry key="project.closed" value="2" />
           <entry key="project.open.time.6" value="1" />
-          <entry key="project.opened" value="1" />
+          <entry key="project.open.time.7" value="1" />
+          <entry key="project.opened" value="2" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -81,15 +78,12 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/1.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="456">
+            <state relative-caret-position="1386">
               <caret line="63" column="37" selection-start-line="63" selection-start-column="37" selection-end-line="63" selection-end-column="37" />
               <folding>
-                <marker date="1689684121625" expanded="true" signature="78:83" ph="..." />
-                <marker date="1689684121625" expanded="true" signature="78:85" ph="..." />
-                <marker date="1689684121625" expanded="true" signature="352:387" ph="..." />
-                <marker date="1689684121625" expanded="true" signature="914:969" ph="..." />
-                <marker date="1689684121625" expanded="true" signature="1015:1050" ph="..." />
-                <marker date="1689684121625" expanded="true" signature="1042:1043" ph="..." />
+                <marker date="1697172970894" expanded="true" signature="78:83" ph="..." />
+                <marker date="1697172970894" expanded="true" signature="78:85" ph="..." />
+                <marker date="1697172970894" expanded="true" signature="352:387" ph="..." />
               </folding>
             </state>
           </provider>
@@ -305,21 +299,12 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/predict.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/data_preprocessing/tools.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="119">
           <caret line="25" selection-start-line="25" selection-end-line="25" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -330,24 +315,15 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/huggingface_hub/utils/_validators.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="227">
-          <caret line="160" selection-start-line="160" selection-end-line="160" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://D:/Pycharm/anaconda3/Lib/site-packages/huggingface_hub/utils/_validators.py" />
     <entry file="file://$PROJECT_DIR$/1.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="456">
+        <state relative-caret-position="1386">
           <caret line="63" column="37" selection-start-line="63" selection-start-column="37" selection-end-line="63" selection-end-column="37" />
           <folding>
-            <marker date="1689684121625" expanded="true" signature="78:83" ph="..." />
-            <marker date="1689684121625" expanded="true" signature="78:85" ph="..." />
-            <marker date="1689684121625" expanded="true" signature="352:387" ph="..." />
-            <marker date="1689684121625" expanded="true" signature="914:969" ph="..." />
-            <marker date="1689684121625" expanded="true" signature="1015:1050" ph="..." />
-            <marker date="1689684121625" expanded="true" signature="1042:1043" ph="..." />
+            <marker date="1697172970894" expanded="true" signature="78:83" ph="..." />
+            <marker date="1697172970894" expanded="true" signature="78:85" ph="..." />
+            <marker date="1697172970894" expanded="true" signature="352:387" ph="..." />
           </folding>
         </state>
       </provider>
