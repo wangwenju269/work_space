@@ -1,6 +1,6 @@
 ## **项目请先打赏**
 
-![](F:\git_work_project\work_project\Single_Agent\must_read.jpg)
+![](must_read.jpg)
 
 ```
 流程:
