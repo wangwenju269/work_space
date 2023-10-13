@@ -4,7 +4,7 @@
 
 - ### **Data Loader**
 
-使用`Dataset` 类和 `DataLoader` 类处理数据集和加载样本，通过 `DataLoader` 按批加载数据，将样本转换成模型可以接受的输入格式。也就是将每个 batch 中的文本按照预训练模型的格式进行编码，批处理函数 `collate_fn` 来实现。
+使用`Dataset` 类和 `DataLoader` 类处理数据集和加载样本，通过 `DataLoader` 按批加载数据，将样本转换成模型可以接受的输入格式。也就是将每个 batch 中的文本按照预训练模型的格式进行编码，批处理函数 `collate_fn` 来实现
 
 ```python
 from torch.utils.data import Dataset,DataLoader
