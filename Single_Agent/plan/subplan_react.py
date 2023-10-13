@@ -12,10 +12,10 @@ class REACT:
                          query,
                          history,
                          **kwargs):
-        chat_history = [(x['user'], x['assistant']) for x in history] + [(query, '')]  
+        chat_history = history + [(query, '')]  
         im_start, im_end, prompt = self.im_start,  self.im_end, self.systems 
         for i, (query, response) in enumerate(chat_history):
-            if (len(chat_history) == 1) or (i == len(chat_history) - 2):
+            if (len(chat_history) == 1)  or (i == len(chat_history) - 2) :
                 query = REACT_PROMPT.format(
                                     tool_descs = kwargs['tools_text'],
                                     tool_names = kwargs['tools_name_text'],
@@ -49,6 +49,7 @@ class REACT:
         if  stop_flag in text:
             i = text.rfind(stop_flag)
             finally_answer = text[i+len(stop_flag):] 
+            finally_answer = finally_answer.lstrip(' ').rstrip('\n')  
             return finally_answer
         else:
             return text
@@ -73,21 +74,22 @@ class REACT:
                 # text += output 
                 break
             count += 1
-        print("\033[32m" + output + "\033[0m")  
+        # print("\033[32m" + output + "\033[0m")  
         answer = self.parse_output(output)
         return answer
     
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        query = kwargs.get('task')
-        history = kwargs.get('history')
-        TOOL = kwargs.get('TOOL')
-        qwen = kwargs.get('LLM')
-        task_map_tool = kwargs.get('tool_query_func')
-        if  task_map_tool:
-            tools = task_map_tool(query)
+        query = kwargs.pop('task',None)
+        tool_func = kwargs.pop('tool_func',None)
+        qwen = kwargs.pop('llm',None)
+        select_tool = kwargs.pop('select_tool',[])
+        sub_tool = kwargs.pop('sub_tool',[])
+        history = kwargs.pop('history',[])
+        if not select_tool and not sub_tool: 
+            from tools.tool import TOOLS 
         else:
-            from tools.tool import tools   
-        tools_text, tools_name = GET_TOOL_DESC.get_tools_text(tools) 
+            TOOLS = select_tool + sub_tool  
+        tools_text, tools_name = GET_TOOL_DESC.get_tools_text(TOOLS) 
         # print("\033[31m" + query + "\033[0m\n" +
         #         "\033[35m" + 'Candidate tool set  >> ' + tools_name + "\033[0m" )
         planning_prompt  =  self.construct_prompt( 
@@ -97,6 +99,6 @@ class REACT:
                                                 tools_name_text = tools_name
                                                 )
         '''------  获取模型回应 -------'''
-        response = self.infer(planning_prompt, qwen, TOOL ) 
+        response = self.infer(planning_prompt, qwen, tool_func) 
         response = response.lstrip('\n').rstrip() 
         return response

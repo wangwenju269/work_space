@@ -29,7 +29,12 @@ class Qwen:
             if idx != -1:
                 output = output[: idx + len(stop_str)]
         return output  # 续写 input_text 的结果，不包含 input_text 的内容
-    
+    def qwen_chat(self,query,history):
+        answer, _ = self.model.chat(tokenizer = self.tokenizer,
+                                        query = query ,
+                                        history = history,
+                                        append_history = False)
+        return answer
 
 if  __name__ == '__main__':
     checkpoint = "/data/lly/model/Qwen-7B-Chat"

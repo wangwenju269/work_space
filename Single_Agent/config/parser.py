@@ -22,7 +22,7 @@ class DataArguments(ModelArguments):
       metadata = {"help" : 'output file'}
       )
       k: int = field(
-      default = 2 ,
+      default = 4 ,
       metadata = {"help" : "候选工具的数量"}
       )      
       im_start: str = field(

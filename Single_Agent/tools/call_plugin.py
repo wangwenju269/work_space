@@ -22,8 +22,9 @@ class User_defined_tools:
                     'arxiv'   :     self.tool_wrapper_for_qwen(arxiv),
                     'python'  :     self.tool_wrapper_for_qwen(python),
                     'weather_api'   : self.tool_weather_for_qwen(OpenWeatherMap),
-                    'text2speech'      : self.text_speech_for_qwen,
-                    'image_gen'        : self.text_image_for_qwen
+                    'speech_synthesis'      : self.text_speech_for_qwen,
+                    'image_gen'        : self.text_image_for_qwen,
+                    'no_use_tool'      : self.no_use_tool
                     }
             
         def tool_wrapper_for_qwen(self, tool):
@@ -55,7 +56,8 @@ class User_defined_tools:
                 prompt = json5.loads(query)["prompt"]
                 prompt = urllib.parse.quote(prompt)
                 return json5.dumps({'image_url': f'https://image.pollinations.ai/prompt/{prompt}'}, ensure_ascii=False)
-        
+        def no_use_tool(self,x):
+            return 'Refer to contextual information to answer questions,plase think it step by step'
 
         def call_plugin(self, action, action_input):
             func = self.config[action]

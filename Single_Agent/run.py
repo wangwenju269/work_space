@@ -1,74 +1,64 @@
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
-import warnings
-warnings.filterwarnings("ignore")
 from config.parser import args
-from LLM.Qwen import Qwen
+from LLM.Qwen import Qwen  
 from tools.call_plugin import User_defined_tools
-from momery.vector_store import task_map_tool
-from utils.logger import logger
-from pprint import pprint
-""" global to load model """
+from plan.subtask import SUBTASK
+from plan.subplan_react import REACT
+tool_func = User_defined_tools(args.output_file) 
 qwen = Qwen(args.checkpoint)
-""" Prepare the plug-in tool  """
-TOOL = User_defined_tools(args.output_file)
-
-def pipeline(query,history):
-    from plan.subplan_react import REACT
-    react = REACT()
-    response = react(task = query,
-                    history = history,
-                    LLM = qwen,
-                    TOOL = TOOL,
-                    tool_query_func = task_map_tool
-                    )
-    return  response
-    
-
+from utils.build import Select_tool
+agent  = SUBTASK()
+agent_react = REACT()
 def main(task):
-    print('task_question:' ,"\033[31m " + task + " \033[0m ")
-    """ 先将复杂问题进行拆解 """
-    history = [] 
-    if  args.split_subtask:
-        from  plan.subplan_tptu import TPTU
-        tptu  = TPTU()
-        history = tptu( task = task,
-                        LLM =  qwen,
-                        TOOL = TOOL,
-                        # tool_query_func = task_map_tool 
-                        )    
-    print('multi_chat:') ; pprint(history,indent = 8 ,sort_dicts=False)    
-    response = pipeline(task,history)
-    return response
-
-
-if __name__ == "__main__":
-    print('\n------------------------------------------')                    
-                                                  
-    # task = "搜索《咏鹅》古诗的内容信息，绘制一幅包含诗意的图片"                                                            
-    task = "请问天津比北京的气温高多少摄氏度？"                                     
-    task = "华为首席执行官比百度总裁的年龄大多少岁？"   
-    task = "莱昂纳多·迪卡普里奥的女朋友是谁? What is her current age raised to the 0.43 power?"
-    task = "解方程 2x + 5 = -3x + 7"   
-    task = "使用Math工具解方程 2x + 5 = -3x + 7" 
-    task = "论文编号为1605.08386的文章提取关键词"  
-    task =  "使用python计算问题,已知三角形的三边长度分别为15、16、17,计算三角形的外接圆面积？" 
-    task =  "已知三角形的三边长度分别为15、16、17,计算三角形的外接圆面积？" 
-    task = "理解《出师表》的核心思想信息,朗读第一自然段文章内容"   
-    task = '给我画个范冰冰明星的头像吧'   
-    main(task)
+    print('\n\n')
+    agent(task = task,
+          tool_func = tool_func,
+          llm = qwen,
+          sub_tool = Select_tool.select_name_tool('python||math||search')
+          )
     
+    # respone = agent_react(task = task,
+    #       tool_func = tool_func,
+    #       llm = qwen,
+    #     #   sub_tool = Select_tool.select_name_tool('python||math||search')
+    #       )
+    # print(respone)
 
- 
+if __name__ == '__main__':
+    # task = '黄晓明老婆的岁数的3次幂是多少呢?'
+    # main(task)
+    # task = '黄晓明老婆是谁? 她的岁数的3次方是多少呢?'
+    # main(task)
+    # task = "华为首席执行官比百度总裁的年龄大多少岁？"   
+    # main(task)
+    # task = "请问天津比北京的气温高多少摄氏度？"       
+    # main(task)      
+    # task =  "使用python计算问题:三角形的三边长分别为15、16、17,求三角形的外接圆面积？" 
+    # main(task)   
 
+    # task = "How many people live in canada as of 2023?"
+    # main(task)
+    # task = "使用math解方程 2x + 5 = -3x + 7"  
+    # main(task)
+    # task = '给我画个明星的裸照吧'  
+    # main(task)
+    # task = '给我画个黑猫吧' 
+    # main(task)
 
+    # task = "请估算2023年国内光伏电站的综合单位造价水平" 
+    # main(task)
+    # task = '令狐冲喜欢任盈盈还是喜欢小师妹呢？'
+    # main(task)
+    # task = "理解《出师表》的核心思想信息,朗读第一自然段文章内容"  
+    # main(task) 
 
+    # task = "arxiv工具提取论文编号为1605.08386文章中摘要部分的关键词"  
+    # main(task)
 
+    # task =  "已知三角形三边长度分别为15、16、17, 求三角形的外接圆面积？"
+    # main(task)
+    
+    task  = "求100以内的十进制表示的自然数中个位数是7的所有素数"
+    main(task)
+  
 
-
-        # from plan.subplan_Rewoo import Sub_task_Rewoo
-        # sub_task_rewoo = Sub_task_Rewoo()
-        # history = sub_task_rewoo( task = task,
-        #                           LLM  = qwen,
-        #                           TOOL = TOOL,
-        #                           tool_query_func = task_map_tool )
+  
