@@ -8,7 +8,7 @@
 
 ***
 
-+ <u>**代码说明**</u>
++ <u>**代码说明**</u>：
   + **train** ：启动模型训练流程，包括数据和模型加载，优化器、损失函数设置等。
   + **data_pre_process** ： 将 .json 数据文件读取，输入Data loader，提供两种创建方法。
   + **pretrained** :  BERT预训练模型的路径，本实验采用 chinese_roberta_wwm_ext。包含三个必要文件：(config.json,  vocab.txt, pytorch_model.bin), 可以在hugging face 官网下载，并放置在指定参数路径下。
