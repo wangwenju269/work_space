@@ -138,13 +138,12 @@ class  SUBTASK:
                 action_return += '\n\nRefer to contextual information to answer questions,plase think it step by step'
                 answer = self.Summarize(thought, action_return, [])
 
-            elif  action_return.startswith('_error_403_'): 
-                query = ""
+            elif  action_return.startswith('_error_403_'):
                 for i, (Q, A) in enumerate(history):
                     A = self.Summarize(Q, A, history[:i])
                     Q = Q.lstrip('\n').rstrip()
                     A = A.lstrip('\n').rstrip()
-                    query += f'{Q}:{A};'    
+                    query = f'{Q}:{A}'
                 act_name = action_return.replace('_error_403_','')
                 query += f'你必须使用{act_name}工具回答：{thought}'    
                 answer = self.sub_task_with_react(query,act_name)
