@@ -52,7 +52,7 @@ TOOLS = [
 
         {
         'name_for_human':
-            '代码解释器',
+            'python',
         'name_for_model':
             'python',
         'description_for_model':
@@ -63,8 +63,7 @@ TOOLS = [
                 {
                 "name": "query",
                 "type": "string",
-                "description": "a valid python command."
-                                "代码解释器",
+                "description": "a valid python command.",
                 'required': True
                 }
             ], 
@@ -97,6 +96,19 @@ TOOLS = [
                 }
             ],
         }, 
+
+        {
+            'name_for_human': 'not_use_tool',
+            'name_for_model': 'no_use_tool',
+            'description_for_model': 'The tools are not useful for answering the question.',
+            'parameters': [
+                {
+                    'name': 'no_use_tool',
+                    'description': 'The tools are not useful for answering the question.',
+                }
+            ],
+        }
+        
         # {
         # 'name_for_human': 'Speech synthesis',
         # 'name_for_model': 'speech_synthesis',
@@ -110,35 +122,12 @@ TOOLS = [
         #         }
         #     ]
         # },
-
-        {
-            'name_for_human': 'not_use_tool',
-            'name_for_model': 'no_use_tool',
-            'description_for_model': 'The tools are not useful for answering the question.',
-            'parameters': [
-                {
-                    'name': 'no_use_tool',
-                    'description': 'The tools are not useful for answering the question.',
-                }
-            ],
-        },
-        # {
-        #     'name_for_human': '谷歌搜索',
-        #     'name_for_model': 'google_search',
-        #     'description_for_model': '谷歌搜索是一个通用搜索引擎，可用于访问互联网、查询百科知识、了解时事新闻等。',
-        #     'parameters': [
-        #         {
-        #             'name': 'query',
-        #             'description': '搜索关键词或短语',
-        #             'required': True,
-        #             'schema': {'type': 'string'},
-        #         }
-        #     ],
-        # } 
-
     ]
 
-tool_zh = [
+
+
+
+
         # {
         #     'name_for_human': '谷歌搜索',
         #     'name_for_model': 'search',
@@ -179,7 +168,7 @@ tool_zh = [
         #         }
         #     ]
         # }
-    ]
 
+        
 
 

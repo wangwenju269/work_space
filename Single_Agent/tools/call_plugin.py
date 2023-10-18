@@ -12,8 +12,7 @@ python = PythonAstREPLTool()
 OpenWeatherMap = OpenWeatherMapAPIWrapper()
 
 class User_defined_tools:
-        def __init__(self,  output_file):
-            self.output_file = output_file
+        def __init__(self):
             self.config = {
                     'search'  :     self.tool_wrapper_for_qwen(search), 
                     'google_search'  :     self.tool_wrapper_for_qwen(search),

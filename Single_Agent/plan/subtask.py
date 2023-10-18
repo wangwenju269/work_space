@@ -94,16 +94,16 @@ class  SUBTASK:
         thou_act = defaultdict(str) 
         for thought, action in zip(thoughts, actions):
             if  not action:  # TPTU 拆解子任务没有工具使用 
-                thou_act[thought] = "no_use_tool"  
+                thou_act[thought] = "no_use_tool_"  
                 continue
             '''调用外部的工具返回工具执行的结果  403 是函数名正确，参数解析不正确  404 为函数名错误'''    
-            for act in action:
-                if 'no_use_tool' in act:    
-                    thou_act[thought] = "no_use_tool"  
-                    continue  
+            for act in action: 
                 Flag = False  # 标志位重置
                 try:
                     act_name,input_paremater = self.parse_paremater(act)
+                    if 'no_use_tool' ==  act_name:    
+                        thou_act[thought] = f'no_use_tool_{input_paremater}'
+                        continue  
                     Flag = True  if act_name in tools_name_text  else False                
                     tool_answer = self.tool_func.call_plugin(act_name,input_paremater)
                     tool_answer = self.post_process(tool_answer)
@@ -129,33 +129,32 @@ class  SUBTASK:
             if ('image_url' in action_return):  # 图片的 url 直接返回 
                 history.append((thought, action_return.replace('image_url','Final Answer')))
                 continue
-            if  action_return.startswith('no_use_tool'):
-                action_return = query
-                for i, (Q, A) in enumerate(history):
-                    Q = Q.lstrip('\n').rstrip()
-                    A = A.lstrip('\n').rstrip()  
-                    action_return += f'\n{Q},{A}'
-                action_return += '\n\nRefer to contextual information to answer questions,plase think it step by step'
-                answer = self.Summarize(thought, action_return, [])
+            elif  action_return.startswith('no_use_tool'):
+                par_args = action_return.replace('no_use_tool_','')
+                thought += "(Note:refer to contextual information to answer, let's think it step by step)"
+                answer = self.qwen.qwen_chat(thought,history)
 
-            elif  action_return.startswith('_error_403_'):
-                for i, (Q, A) in enumerate(history):
+            elif  action_return.startswith('_error_403_'): 
+                act_name = action_return.replace('_error_403_','')
+                history_copy = []
+                for  i, (Q, A) in enumerate(history):
                     A = self.Summarize(Q, A, history[:i])
                     Q = Q.lstrip('\n').rstrip()
-                    A = A.lstrip('\n').rstrip()
-                    query = f'{Q}:{A}'
-                act_name = action_return.replace('_error_403_','')
-                query += f'你必须使用{act_name}工具回答：{thought}'    
-                answer = self.sub_task_with_react(query,act_name)
+                    A = A.lstrip('\n').rstrip() 
+                    history_copy.append((Q,A))
+                answer = self.check_403_error(thought,act_name,history_copy)
 
             elif action_return.startswith('_error_404_'):
-                sub_query = query
-                for Q, A in history:
-                    Q = Q.lstrip('\n').rstrip()
-                    A = A.lstrip('\n').rstrip()
-                    sub_query += f'<|im_end|>\n<|im_start|>assistant\nThought:{Q}\nObservation:{A}'  
-                sub_query += f'<|im_end|>\n<|im_start|>assistant\nThought:{thought}\n'    
-                answer = self.sub_task_with_react(sub_query, "")
+                answer = self.qwen.qwen_chat(f'请结合上文信息来回答问题:{thought}', history)
+
+                # agent_scratchpad = query
+                # for i, (Q, A) in enumerate(history):
+                #     # A = self.Summarize(Q, A, history[:i])
+                #     Q = Q.lstrip('\n').rstrip()
+                #     A = A.lstrip('\n').rstrip()
+                #     agent_scratchpad += f'\nThought:{Q}\nObservation:{A}'  
+                # agent_scratchpad += f'\nThought:{thought}\n'    
+                # answer = self.sub_task_with_react(agent_scratchpad, "")
             else:
                   answer =  action_return
             history.append((thought,answer))
@@ -167,6 +166,16 @@ class  SUBTASK:
         answer = self.qwen.qwen_chat(solver_prompt,history)
         return answer
     
+    def check_403_error(self,sub_task, act_name,history):
+        from check.check_403 import CHECK
+        check = CHECK()
+        response =  check(task = sub_task,
+                    llm = self.qwen,
+                    tool_func = self.tool_func,
+                    sub_tool = Select_tool.select_name_tool(act_name) if act_name else self.TOOLS,
+                    history = history
+                    )
+        return  response 
 
     def sub_task_with_react(self,sub_task, act_name):
         from plan.subplan_react import REACT
@@ -209,7 +218,7 @@ class  SUBTASK:
             self.TOOLS = TOOLS
         else:
             self.TOOLS = select_tool + sub_tool
-        print(f"\033[31mOrigin Query:{query}\033[31m")
+        print(f"Origin Query:{query}")
         tools_text,tools_name_text = GET_TOOL_DESC.get_tools_other_text(self.TOOLS)     
         prompt = self.construct_prompt(query,tools_text)
         turn_id = 0
@@ -237,7 +246,7 @@ if __name__ == '__main__':
     from config.parser import args
     from LLM.Qwen import Qwen  
     from tools.call_plugin import User_defined_tools
-    tool_func = User_defined_tools(args.output_file) 
+    tool_func = User_defined_tools() 
     qwen = Qwen(args.checkpoint)
 
 

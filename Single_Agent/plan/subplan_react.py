@@ -54,13 +54,13 @@ class REACT:
         else:
             return text
     
-    def infer(self, planning_prompt,llm,TOOL):
+    def infer(self, planning_prompt,tools_name,llm,TOOL):
         # text = ''
         count = 0 
         while count <= 2:
             response = llm.text_completion(planning_prompt, stop_words=['Observation:', 'Observation:\n'])
             action, action_input, output = self.parse_latest_plugin_call(response)
-            if action:  # 需要调用插件
+            if  (action in tools_name) and action :  # 需要调用插件
                 api_output = TOOL.call_plugin(action.lower(), action_input)
                 api_output = str(api_output) if api_output else ''   # 部分api工具返回结果非字符串格式需进行转化后输出
                 if "no tool founds" == api_output:
@@ -99,6 +99,6 @@ class REACT:
                                                 tools_name_text = tools_name
                                                 )
         '''------  获取模型回应 -------'''
-        response = self.infer(planning_prompt, qwen, tool_func) 
+        response = self.infer(planning_prompt,tools_name, qwen, tool_func) 
         response = response.lstrip('\n').rstrip() 
         return response

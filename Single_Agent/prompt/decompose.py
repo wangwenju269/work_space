@@ -11,7 +11,7 @@ Plan: 当前子任务要解决的问题
 3. 工具参数可以是正常输入text, 或是 #E[依赖的索引], 或是两者都可以。
 4. 工具名称从一下工具中选择：
 {tool_description}
-注意：输出不要重复,拆分不允许超过3个子任务。
+注意：输出拒绝重复,拆分不允许超过3个子任务。
 为方便你理解问题,提供了一些案例你可以学习。
 
 Question:思考《咏鹅》古诗所表达的思想是什么？
@@ -22,7 +22,7 @@ Question:绘制一幅包含《咏鹅》诗意信息的图片。
 Plan: 搜索《咏鹅》古诗的内容信息
 #E[1] = search(query="咏鹅古诗")
 Plan: 绘制一幅包含诗意的图片
-#E[2] = image_gen(prompt="A picture of a swan singing in a lake with the words '咏鹅' written on it.")
+#E[2] = image_gen(prompt="A picture of a swan singing in a lake.")
 
 Question:{query}
 """
@@ -30,10 +30,12 @@ Question:{query}
 WORKER_PROMPT_CN = """
 想法: {thought}\n回答: {action_resp}
 """
-SOLVER_PROMPT_CN = """为了帮助你解决任务,我们提供了与任务相关的信息。
-注意: 其中一些信息可能存在噪声，因此你需要谨慎的使用它们。
-信息:{worker_log}
-请回答下面问题,答案要总结归纳,精炼准确,不要包含其他不需要的文字。
+SOLVER_PROMPT_CN = """为了帮助你解决任务,我们提供了与任务相关的想法。
+注意: 
+1. 其中一些想法可能存在噪声,你需要谨慎的使用它们。
+2. 如果这个问题的答案已经存在,直接返回精炼的答案即可。
+{worker_log}
+请结合上文信息来回答问题,答案要总结归纳,精炼准确。
 问题:{question}
 """
 
@@ -58,3 +60,4 @@ INTENT: str = """现在有一些工具,名称为{intents}。
 
 问题：“{query}”
 """
+
