@@ -17,8 +17,8 @@ class ModelArguments:
 
 @dataclass
 class DataArguments(ModelArguments):
-      output_file:str = field(
-      default = "temp/speech.mp3",
+      output_vidio_file:str = field(
+      default = "wangGPT/assets/vidio/temp.mp3",
       metadata = {"help" : 'output file'}
       )
       k: int = field(

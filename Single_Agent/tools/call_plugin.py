@@ -22,8 +22,7 @@ class User_defined_tools:
                     'python'  :     self.tool_wrapper_for_qwen(python),
                     'weather_api'   : self.tool_weather_for_qwen(OpenWeatherMap),
                     'speech_synthesis'      : self.text_speech_for_qwen,
-                    'image_gen'        : self.text_image_for_qwen,
-                    'no_use_tool'      : self.no_use_tool
+                    'image_gen'        : self.text_image_for_qwen
                     }
             
         def tool_wrapper_for_qwen(self, tool):
@@ -43,11 +42,12 @@ class User_defined_tools:
 
         def text_speech_for_qwen(self,query):
             import edge_tts, asyncio,json5
+            from config.parser import args
             query = json5.loads(query)["prompt"]
             voice = 'zh-CN-YunxiNeural'; rate = '-4%'; volume = '+0%'
             async def my_function():
                 tts = edge_tts.Communicate(text = query, voice=voice, rate=rate, volume=volume)
-                await tts.save(self.output_file) 
+                await tts.save(f'{args.output_vidio_file}') 
             return asyncio.run(my_function())
 
         def text_image_for_qwen(self,query):
@@ -55,15 +55,15 @@ class User_defined_tools:
                 prompt = json5.loads(query)["prompt"]
                 prompt = urllib.parse.quote(prompt)
                 return json5.dumps({'image_url': f'https://image.pollinations.ai/prompt/{prompt}'}, ensure_ascii=False)
-        def no_use_tool(self,x):
-            return 'Refer to contextual information to answer questions,plase think it step by step'
+        
+        @staticmethod
+        def no_use_tool():
+            return "(Note:refer to contextual information to answer, let's think it step by step)"
 
         def call_plugin(self, action, action_input):
-            func = self.config[action]
-            observation = func(action_input)
-            return  observation 
-        
-        @ classmethod
+            return  self.config[action](action_input)
+               
+        @classmethod
         def _construct_Input(cls,input,tool_name):
             if   tool_name in ['search','google_search','math','arxiv','python' ]:  
                  sub_query = json5.dumps({'query':input},ensure_ascii= False) 

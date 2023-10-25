@@ -1,9 +1,7 @@
-import sys
-sys.path.append('agent')
 from typing import Any
-from utils.build import GET_TOOL_DESC, Select_tool 
-from .check_parameters import CHECK_PROMPT, EXAMPLE
 import re, json5  
+from utils.build import GET_TOOL_DESC, Select_tool 
+from .check_403_prompt import CHECK_PROMPT, EXAMPLE
 class CHECK:
     def __init__(self) :
         self.im_start = '<|im_start|>'
@@ -45,35 +43,36 @@ class CHECK:
         return act_name, input_paremater
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        query = kwargs.pop('task',None)
-        tool_func = kwargs.pop('tool_func',None)
+        task = kwargs.pop('task',None)
+        External_API = kwargs.pop('External_API',None)
         qwen = kwargs.pop('llm',None)
-        select_tool = kwargs.pop('select_tool',[])
-        sub_tool = kwargs.pop('sub_tool',[])
-        if not select_tool and not sub_tool: 
+        select_tool = kwargs.pop('system_select_tool',[])
+        assign_tool = kwargs.pop('user_assign_tool',[])
+        if not select_tool and not assign_tool: 
             from tools.tool import TOOLS 
         else:
-            TOOLS = select_tool + sub_tool  
+            TOOLS = select_tool + assign_tool  
         tools_desc, tools_name = GET_TOOL_DESC.get_tools_text(TOOLS) 
         kwargs.update(tools_desc = tools_desc,tools_name = tools_name)
-        planning_prompt  =  self.construct_prompt(query,kwargs)
+        planning_prompt  =  self.construct_prompt(task,kwargs)
         response = qwen.text_completion(planning_prompt) 
         act_name, input_paremater = self.parse_paremater(response)  
-        tool_answer = tool_func.call_plugin(act_name,input_paremater)
-        print(f"\033[31mCheck:\n{response}-->response:{tool_answer}\033[31m")
+        tool_answer = External_API.call_plugin(act_name,input_paremater)
+        print(f"\033[31mCheck:\n{response}\033[31m\n-->response:\033[0;30;47m{tool_answer}\033[0m")
+        if not tool_answer: return '我已经仔细完成该任务结果保存在assets文件'
         return tool_answer
     
 if __name__ == '__main__':
     from config.parser import args
     from LLM.Qwen import Qwen  
     from tools.call_plugin import User_defined_tools
-    tool_func = User_defined_tools() 
+    External_API = User_defined_tools() 
     qwen = Qwen(args.checkpoint)
     check = CHECK()
     check(
         task = '百度总裁年龄的三次幂减去阿里执行官年龄的平方,该数值的两倍是多少?',
         history = [('搜索百度总裁比阿里执行官的年龄信息','百度总裁52岁,阿里执行官35岁')],
-        tool_func = tool_func,
-        select_tool = Select_tool.select_name_tool('math') ,
-        llm = qwen,
+        External_API = External_API,
+        user_assign_tool = Select_tool.assign_name_tool('math') ,
+        llm = qwen
     )   

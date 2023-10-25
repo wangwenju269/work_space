@@ -1,17 +1,17 @@
 PLANNER_PROMPT_CN = """请将 Question 拆分为(1个或2个)子任务,从而能够得到充分的信息以解决问题, 按照以下格式返回：
 ```
 Plan: 当前子任务要解决的问题
-#E[id] = 工具名称[工具参数]
+#E[id] = 工具名称(工具参数)
 Plan: 当前子任务要解决的问题
-#E[id] = 工具名称[工具参数]
+#E[id] = 工具名称(工具参数)
 ```
 其中
 1. #E[id] 用于存储Plan id的执行结果, 可被用作占位符。
 2. 每个 #E[id] 所执行的内容应与当前Plan解决的问题严格对应。
-3. 工具参数可以是正常输入text, 或是 #E[依赖的索引], 或是两者都可以。
+3. 工具参数是正常输入text。
 4. 工具名称从一下工具中选择：
 {tool_description}
-注意：输出拒绝重复,拆分不允许超过3个子任务。
+注意：回答拒绝多次重复,拆分不允许超过3个子任务。
 为方便你理解问题,提供了一些案例你可以学习。
 
 Question:思考《咏鹅》古诗所表达的思想是什么？
@@ -61,3 +61,10 @@ INTENT: str = """现在有一些工具,名称为{intents}。
 问题：“{query}”
 """
 
+# Question: What is Leo Dicaprio's girlfriend's age to the power of 0.34? 
+# Plan: Find out the name of Leo Dicaprio's girlfriend.
+# #E[1] = search(query="name of Leo Dicaprio's girlfriend")
+# Plan: Find out the age of Leo Dicaprio's girlfriend.
+# #E[2] = search(query="age of #E[1]")
+# Plan: Calculate her age to the power of 0.34.
+# #E[3] = math(query="#E[2] ^ 0.34") 

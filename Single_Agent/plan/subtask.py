@@ -1,5 +1,3 @@
-import sys
-sys.path.append('agent')
 from typing import Any
 from prompt.decompose import  PLANNER_PROMPT_CN, SOLVER_PROMPT_CN , WORKER_PROMPT_CN
 from utils.build import GET_TOOL_DESC, Select_tool 
@@ -86,26 +84,22 @@ class  SUBTASK:
         return tool_answer 
 
     
-    def sub_task_process(self, query,thoughts, actions, tools_name_text):
+    def sub_task_process(self,thoughts, actions, tools_name_text):
         '''
         01 功能：子任务的处理模块,输入thoughts, actions均为LIST,且元素具有对应关系。
         '''
         from collections import defaultdict
         thou_act = defaultdict(str) 
         for thought, action in zip(thoughts, actions):
-            if  not action:  # TPTU 拆解子任务没有工具使用 
-                thou_act[thought] = "no_use_tool_"  
-                continue
+            # if  not action:  thou_act[thought] = 'no_use_tool' # TPTU 拆解子任务没有工具使用 
             '''调用外部的工具返回工具执行的结果  403 是函数名正确，参数解析不正确  404 为函数名错误'''    
             for act in action: 
+                if 'no_use_tool' in  act: thou_act[thought] = 'no_use_tool';  continue 
                 Flag = False  # 标志位重置
                 try:
-                    act_name,input_paremater = self.parse_paremater(act)
-                    if 'no_use_tool' ==  act_name:    
-                        thou_act[thought] = f'no_use_tool_{input_paremater}'
-                        continue  
+                    act_name,input_paremater = self.parse_paremater(act) 
                     Flag = True  if act_name in tools_name_text  else False                
-                    tool_answer = self.tool_func.call_plugin(act_name,input_paremater)
+                    tool_answer = self.External_API.call_plugin(act_name,input_paremater)
                     tool_answer = self.post_process(tool_answer)
                     if tool_answer:
                        thou_act[thought] += f"{tool_answer}" if tool_answer.endswith("\n" ) else f"{tool_answer}\n" 
@@ -129,11 +123,6 @@ class  SUBTASK:
             if ('image_url' in action_return):  # 图片的 url 直接返回 
                 history.append((thought, action_return.replace('image_url','Final Answer')))
                 continue
-            elif  action_return.startswith('no_use_tool'):
-                par_args = action_return.replace('no_use_tool_','')
-                thought += "(Note:refer to contextual information to answer, let's think it step by step)"
-                answer = self.qwen.qwen_chat(thought,history)
-
             elif  action_return.startswith('_error_403_'): 
                 act_name = action_return.replace('_error_403_','')
                 history_copy = []
@@ -146,17 +135,12 @@ class  SUBTASK:
 
             elif action_return.startswith('_error_404_'):
                 answer = self.qwen.qwen_chat(f'请结合上文信息来回答问题:{thought}', history)
-
-                # agent_scratchpad = query
-                # for i, (Q, A) in enumerate(history):
-                #     # A = self.Summarize(Q, A, history[:i])
-                #     Q = Q.lstrip('\n').rstrip()
-                #     A = A.lstrip('\n').rstrip()
-                #     agent_scratchpad += f'\nThought:{Q}\nObservation:{A}'  
-                # agent_scratchpad += f'\nThought:{thought}\n'    
-                # answer = self.sub_task_with_react(agent_scratchpad, "")
+            
+            elif action_return == 'no_use_tool':
+                thought += self.External_API.no_use_tool()
+                answer = self.qwen.qwen_chat(thought,history)
             else:
-                  answer =  action_return
+                answer =  action_return
             history.append((thought,answer))
         return history
     
@@ -169,10 +153,10 @@ class  SUBTASK:
     def check_403_error(self,sub_task, act_name,history):
         from check.check_403 import CHECK
         check = CHECK()
-        response =  check(task = sub_task,
+        response =  check( task = sub_task,
                     llm = self.qwen,
-                    tool_func = self.tool_func,
-                    sub_tool = Select_tool.select_name_tool(act_name) if act_name else self.TOOLS,
+                    External_API = self.External_API,
+                    user_assign_tool = Select_tool.assign_name_tool(act_name) if act_name else self.TOOLS,
                     history = history
                     )
         return  response 
@@ -198,29 +182,20 @@ class  SUBTASK:
 
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        """
-        kwargs:
-            task : 原问题
-            tool_func  : 调用工具函数集合
-            qwen  : llm 语言模型
-            tools : 工具描述集合, 
-            select_tool: 模型生成的工具集合
-            sub_tool : 用户生成的结果
-        """
 
-        query =   kwargs.pop('task',None)
-        self.tool_func =  kwargs.pop('tool_func',None)
+        task =   kwargs.pop('task',None)
+        self.External_API =  kwargs.pop('External_API',None)
         self.qwen =       kwargs.pop('llm',None)
-        select_tool =  kwargs.pop('select_tool',[])
-        sub_tool =     kwargs.pop('sub_tool',[])
-        if  not select_tool and not sub_tool: 
+        select_tool =     kwargs.pop('system_select_tool',[])
+        assign_tool =     kwargs.pop('user_assign_tool',[])
+        if  not select_tool and not assign_tool: 
             from tools.tool import TOOLS 
             self.TOOLS = TOOLS
         else:
-            self.TOOLS = select_tool + sub_tool
-        print(f"Origin Query:{query}")
+            self.TOOLS = select_tool + assign_tool
+        print(f"Origin Query:{task}")
         tools_text,tools_name_text = GET_TOOL_DESC.get_tools_other_text(self.TOOLS)     
-        prompt = self.construct_prompt(query,tools_text)
+        prompt = self.construct_prompt(task,tools_text)
         turn_id = 0
         while turn_id < 2:
             response = self.qwen.text_completion(prompt, stop_words = ['```'] )     
@@ -233,21 +208,14 @@ class  SUBTASK:
                    turn_id += 1
 
         print(f"\033[33mSubtask:{thoughts}\033[0m\n\033[34mTool_func:{list(filter(None,actions))}\033[0m" )
-        history = self.sub_task_process(query, thoughts, actions, tools_name_text)
-        # print(history)
-        finally_answer = self.conclusion(query, history)
+        history = self.sub_task_process(thoughts, actions, tools_name_text)
+        print("\033[0;37;40m\033[0m")
+        pprint([{'user': x, 'assistant' : f'{y[:35]}...' } for  x,y in history],sort_dicts=False)
+        finally_answer = self.conclusion(task, history)
         print(f"\033[32mfinally_answer:{finally_answer}\033[0m") 
         return finally_answer 
 
 
-
-
-if __name__ == '__main__':           
-    from config.parser import args
-    from LLM.Qwen import Qwen  
-    from tools.call_plugin import User_defined_tools
-    tool_func = User_defined_tools() 
-    qwen = Qwen(args.checkpoint)
 
 
  

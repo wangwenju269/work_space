@@ -105,23 +105,23 @@ TOOLS = [
                 {
                     'name': 'no_use_tool',
                     'description': 'The tools are not useful for answering the question.',
+                    'required': False
                 }
             ],
+        },
+        {
+        'name_for_human': 'Speech synthesis',
+        'name_for_model': 'speech_synthesis',
+        'description_for_model': 'Speech synthesis is a text-to-speech service that inputs a text description and returns a speech signal.',
+        'parameters': [
+                {
+                    'name': 'prompt',
+                    'description': 'Describes what exactly you want text-to-speech to contain',
+                    'required': True,
+                    'schema': {'type': 'string'},
+                }
+            ]
         }
-        
-        # {
-        # 'name_for_human': 'Speech synthesis',
-        # 'name_for_model': 'speech_synthesis',
-        # 'description_for_model': 'Speech synthesis is a text-to-speech service that inputs a text description and returns a speech signal.',
-        # 'parameters': [
-        #         {
-        #             'name': 'prompt',
-        #             'description': 'Describes what exactly you want text-to-speech to contain',
-        #             'required': True,
-        #             'schema': {'type': 'string'},
-        #         }
-        #     ]
-        # },
     ]
 
 

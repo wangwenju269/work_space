@@ -70,7 +70,7 @@ class   GET_TOOL_DESC:
 class Select_tool:
     '''根据特定的函数名字取工具'''
     @classmethod
-    def select_name_tool(cls,name):
+    def assign_name_tool(cls,name):
         sub_tools = [ plugin for plugin in TOOLS if  plugin['name_for_model'] in name.split('||') ] 
         return sub_tools
    

@@ -75,30 +75,32 @@ class REACT:
                 break
             count += 1
         # print("\033[32m" + output + "\033[0m")  
+        print(f"\033[32m{output}\033[0m")
         answer = self.parse_output(output)
         return answer
     
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        query = kwargs.pop('task',None)
-        tool_func = kwargs.pop('tool_func',None)
+        task = kwargs.pop('task',None)
+        External_API = kwargs.pop('External_API',None)
         qwen = kwargs.pop('llm',None)
-        select_tool = kwargs.pop('select_tool',[])
-        sub_tool = kwargs.pop('sub_tool',[])
+        select_tool = kwargs.pop('system_select_tool',[])
+        assign_tool = kwargs.pop('user_assign_tool',[])
         history = kwargs.pop('history',[])
-        if not select_tool and not sub_tool: 
+        if not select_tool and not assign_tool: 
             from tools.tool import TOOLS 
         else:
-            TOOLS = select_tool + sub_tool  
+            TOOLS = select_tool + assign_tool  
+        print(f"Origin Query:{task}")
         tools_text, tools_name = GET_TOOL_DESC.get_tools_text(TOOLS) 
         # print("\033[31m" + query + "\033[0m\n" +
         #         "\033[35m" + 'Candidate tool set  >> ' + tools_name + "\033[0m" )
         planning_prompt  =  self.construct_prompt( 
-                                                query = query, 
+                                                query = task, 
                                                 history = history,
                                                 tools_text = tools_text,
                                                 tools_name_text = tools_name
                                                 )
         '''------  获取模型回应 -------'''
-        response = self.infer(planning_prompt,tools_name, qwen, tool_func) 
+        response = self.infer(planning_prompt,tools_name, qwen, External_API) 
         response = response.lstrip('\n').rstrip() 
         return response
