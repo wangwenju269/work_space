@@ -1,6 +1,6 @@
 ## <center>**代码角度看QWen语言模型：模型细节与代码详解** </center>
 
-![](resource/QWenLMHeadModel.png)
+![QWenLMHeadModel](resource/QWenLMHeadModel.png)
 
  **本文将从模型细节（RMS Pre-Norm、SwiGLU激活函数、RoPE旋转位置编码），代码解读（model）以及推理等几个方面对千问模型的细节与代码详解，供大家一起参考，整个流程图上文所示。**
 
@@ -202,7 +202,7 @@
 
 self.h 是整个`transformers`结构图，如下图所示。
 
-![image-20231122184948035](./resource/structure.png)
+![structure](./resource/structure.png)
 
 
 
@@ -265,7 +265,7 @@ self.h 是整个`transformers`结构图，如下图所示。
 
   ​    RMS Norm相比于 layer Norm ，主要区别在于去掉均值的部分，计算公式如下。
 
-  ![image-20231122115138652](./resource/RMSNorm.png)
+  ![RMSNorm](./resource/RMSNorm.png)
 
 ​                            
 
@@ -363,7 +363,7 @@ self.c_attn = nn.Linear(config.hidden_size, 3 * self.projection_size)
 
 **绝对位置实现相对位置的公式推导公式如下**	
 
-![image-20231123120410784](./resource/reformer.png)
+![reformer](./resource/reformer.png)
 
 ```python
 class RotaryEmbedding(torch.nn.Module):
