@@ -1,6 +1,6 @@
 ## <center>**代码角度看QWen语言模型：模型细节与代码详解** </center>
 
-![](.\resource\QWenLMHeadModel.png)
+![](./resource/QWenLMHeadModel.png)
 
  **本文将从模型细节（RMS Pre-Norm、SwiGLU激活函数、RoPE旋转位置编码），代码解读（model）以及推理等几个方面对千问模型的细节与代码详解，供大家一起参考，整个流程图上文所示。**
 
