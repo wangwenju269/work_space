@@ -28,12 +28,12 @@ Question:{query}
 """
 
 WORKER_PROMPT_CN = """
-想法: {thought}\n回答: {action_resp}
+解决问题的想法: {thought}
+
+根据想法实践得到的回答: {action_resp}
 """
-SOLVER_PROMPT_CN = """为了帮助你解决任务,我们提供了与任务相关的想法。
-注意: 
-1. 其中一些想法可能存在噪声,你需要谨慎的使用它们。
-2. 如果这个问题的答案已经存在,直接返回精炼的答案即可。
+SOLVER_PROMPT_CN = """为了帮助你解决任务,我们提供了解决任务相关的想法与相应的回答。
+
 {worker_log}
 请结合上文信息来回答问题,答案要总结归纳,精炼准确。
 问题:{question}

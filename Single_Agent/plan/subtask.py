@@ -102,7 +102,7 @@ class  SUBTASK:
                     tool_answer = self.External_API.call_plugin(act_name,input_paremater)
                     tool_answer = self.post_process(tool_answer)
                     if tool_answer:
-                       thou_act[thought] += f"{tool_answer}" if tool_answer.endswith("\n" ) else f"{tool_answer}\n" 
+                       thou_act[thought] += f"{tool_answer}" if str(tool_answer).endswith("\n" ) else f"{tool_answer}\n" 
                     else:
                        thou_act[thought] +=  f"_error_403_{act_name}" 
                 except  Exception  :

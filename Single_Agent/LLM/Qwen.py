@@ -33,8 +33,7 @@ class Qwen:
     def qwen_chat(self,query,history):
         answer, _ = self.model.chat(    tokenizer = self.tokenizer,
                                         query = query ,
-                                        history = history,
-                                        append_history = False)
+                                        history = history)
         return answer
 
 if  __name__ == '__main__':
