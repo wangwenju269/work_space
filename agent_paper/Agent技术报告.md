@@ -153,14 +153,14 @@ Output: Coca-Cola, or [QA("What other name is Coca-Cola known by?")] Coke, is a 
 
 #### ***TOT(tree of thoughts**):*
 
-​      ![tot](./ages_agent/TOT.png)
+​      ![tot](./images_agent/TOT.png)
 
 总结：它会根据当前的问题分解出多个可能，然后每一个树节点就是父节点的一个子问题，逐层扩散，遍布整个解空间，一些节点就直接会发现不合适而终止掉，达到了有效剪枝的作用。
 
 + Thought decomposition 即将问题进行相关步骤分解
 + Thought generator 思维生成，给定状态s，生成 k 个候选结果，一个是思维采样sample，另外一种的propose prompt 方式。
 
-​       ![img](images_agent\tot.image)
+​       ![img](./images_agent/tot.image)
 
 +   State evaluator 状态评价器：评估器采用启发式方法
 
