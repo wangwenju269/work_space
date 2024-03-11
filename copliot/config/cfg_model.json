@@ -1,0 +1,16 @@
+{
+    "qwen_14b": {
+        "type": "open_model",
+        "model_id": "/data/public/LLM/basemodels/qwen/Qwen-1_8B-Chat",
+        "use_lora": false,
+        "lora_ckpt_dir": "runs/qwen-7b/v4-20240129-022416/checkpoint-1237",
+        "use_raw_generation_config": true,
+        "custom_chat": true,
+        "generate_cfg": {
+            "use_raw_prompt": true,
+            "top_p": 0.8,
+            "max_length": 2000
+        }
+    }
+
+}
