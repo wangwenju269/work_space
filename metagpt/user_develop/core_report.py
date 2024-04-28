@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Literal, Union
-import os
+import os ,json
 from pydantic import Field, model_validator
 from metagpt.logs import logger
 from metagpt.actions.di.ask_review import ReviewConst
@@ -21,17 +21,20 @@ class RewriteReport(Role):
     use_plan: bool = True
     planner: WritePlanner = Field(default_factory= WritePlanner)
     evaluator: EvaluatorReport = Field(default_factory= EvaluatorReport, exclude=True)
+    use_evaluator : bool = True
     tools: Union[str, list[str]] = []  # Use special symbol ["<all>"] to indicate use of all registered tools
     tool_recommender: ToolRecommender = None
     react_mode: Literal["plan_and_act", "react"] =  'plan_and_act'    #"by_order"
     human_design_sop: bool = False
     max_react_loop : int = 5
     use_reflection: bool = False
+    upload_file : str = ''
     @model_validator(mode="after")
     def set_plan_and_tool(self):
         self._set_react_mode(react_mode=self.react_mode, max_react_loop=self.max_react_loop, auto_run=self.auto_run)
         # update user_definite planner 
         self.planner = WritePlanner(goal=self.goal, working_memory=self.rc.working_memory, auto_run=self.auto_run)
+        # Whether to adopt the sop paradigm predefined by humans(是否采用人类预先定义的 sop 范式)
         self.planner.human_design_sop = self.human_design_sop
         self.use_plan = (self.react_mode == "plan_and_act" )      # create a flag for convenience, overwrite any passed-in value
         if self.tools:
@@ -43,9 +46,15 @@ class RewriteReport(Role):
     @property
     def working_memory(self):
         return self.rc.working_memory
-
+    
+  
+    async def run(self, with_message=None, upload_file = '') -> Message | None:
+        self.upload_file = upload_file
+        await super().run(with_message)
+    
     async def _plan_and_act(self) -> Message:
         rsp = await super()._plan_and_act()
+        self.write_out_report()  
         return rsp
 
     async def _act_on_task(self, current_task: Task) -> TaskResult:
@@ -67,17 +76,21 @@ class RewriteReport(Role):
             tool_info = await self.tool_recommender.get_recommended_tool_info(context=context, plan=plan)
         else:
             tool_info = ""
-
         await self._check_data()
-        while not success and counter < max_retry:
-            report, cause_by = await self._write_report(counter, plan_status, tool_info)
-            self.working_memory.add(Message(content= report, role="assistant", cause_by=cause_by))
-            result, success = await self.evaluator.run(report = report,
-                                                       user_requirement = self.get_memories()[0].content,
-                                                       plan_status = plan_status,
-                                                       working_memory=self.working_memory.get())
-            self.working_memory.add(Message(content=result, role="user", cause_by = EvaluatorReport))
-            counter += 1
+        # 先写报告初稿 
+        report, cause_by = await self._write_report(counter, plan_status, tool_info)
+        self.working_memory.add(Message(content= report, role="assistant", cause_by=cause_by))
+        # 对报告初稿进行评估
+        if  self. use_evaluator:
+            success = False
+            while not success and counter < max_retry:
+                report, result, success =  await self.evaluator.run(report = report,
+                                                        user_requirement = self.get_memories()[0].content,
+                                                        plan_status = plan_status,
+                                                        working_memory=self.working_memory.get())
+                self.working_memory.add(Message(content=result, role="user", cause_by = EvaluatorReport))
+                counter += 1
+        else: result, success = '', True
         return report, result, success
 
 
@@ -103,11 +116,28 @@ class RewriteReport(Role):
     
     def read_data_info(self):
         # 检查用户是否附带文件信息
-        file_path = DATA_PATH / 'info.txt'
+        # file_path = DATA_PATH / 'info.json'
+        file_path = self.upload_file
         if  os.path.exists(file_path):
             with    open(file_path, 'r', encoding='utf-8') as file:
-                    data_info = file.read()
-        self.working_memory.add(Message(content=data_info, role="user", cause_by='custom'))
+                    data_info = json.loads(file.read())
+                    key = self.planner.current_task.task_type
+                    data = '\n'.join([str(x) for x in data_info[key].items()])
+            #   加入业务规则性条件
+            if key == 'second_paragraph': data +=  '\n'.join([str(x) for x in data_info['third_paragraph'].items()])       
+        self.working_memory.add(Message(content=data, role="user", cause_by='custom'))
+    
+    def write_out_report(self):
+        # file_path = DATA_PATH / 'report.txt'
+        directory, _ = os.path.splitext(self.upload_file)
+        file_path = f'{directory}_metagpt.txt'
+        result  = ''
+        for task in self.planner.plan.tasks:
+            result += f"{task.code}\n"
+        with open(file_path, 'w') as f:
+            f.write(result)    
+    
+    
      
     async def _check_data(self):
         if 'custom' not in self.working_memory.index:

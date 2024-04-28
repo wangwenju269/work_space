@@ -14,58 +14,30 @@ from metagpt.utils.common import remove_comments
 from metagpt.actions import Action
 from metagpt.utils.common import CodeParser
 from user_develop.prompt.report_task_type import UserTaskType
-
-STRUCTURAL_CONTEXT = """
-## User Requirement
-{user_requirement}
-## Context
-{context}
-## Current Plan
-{tasks}
-## Current Task
-{current_task}
-"""
+from metagpt.actions.di.write_plan import WritePlan
+from metagpt.strategy.task_type import TaskType
 
 PLAN_STATUS = """
-您的目标是构建一个完整、连贯的段落，为整个报告奠定基调。请确保您的文本内容准确、有逻辑性。
-请记住，您的输出将直接影响报告的初步印象，因此请保持专业和客观的风格。
+您的目标是构建一个完整、连贯的事故报告, 请确保您的文字精确、逻辑清晰，并保持专业和客观的写作风格。
 
 当前任务：{current_task}
 
-已生成的章节段落：{report_written}。
+已生成的章节段落：
+{report_written}
 
 为了更好地协助您完成任务，以下是一些指导性建议:
 {guidance}
 
 """
 
-class WritePlan(Action):
-    PROMPT_TEMPLATE: str = """
-    # Context:
-    {context}
-    # Available Task Types:
-    {task_type_desc}
-    # Task:
-    Arrange the plan strictly in paragraph order.
-    Cannot arrange the same paragraph repeatedly
-    Based on the context, write a plan or modify an existing plan of what you should do to achieve the goal. A plan consists of one to {max_tasks} tasks.
-    If you are modifying an existing plan, carefully follow the instruction, don't make unnecessary changes. Give the whole plan unless instructed to modify only one task of the plan.
-    If you encounter errors on the current task, revise and output the current single task only.
-   
-    Output a list of jsons following the format:
-     ```json
-    [
-        {{
-            "task_id": str = "unique identifier for a task in plan, can be an ordinal",
-            "dependent_task_ids": list[str] = "ids of tasks prerequisite to this task",
-            "instruction": "what you should do in this task, one short phrase or sentence",
-            "task_type": "type of this task, should be one of Available Task Types"
-        }},
-        ...
-    ]
-    ```
+class WriteReportPlan(WritePlan):
+    CONSTRAINTS: str = """
+    # Constraints
+       -  Arrange the plan strictly in paragraph order.
+       -  Cannot arrange the same paragraph repeatedly
     """
     async def run(self, context: list[Message], max_tasks: int = 7, human_design_sop = True) -> str:
+        self.PROMPT_TEMPLATE = f'{self.PROMPT_TEMPLATE}\n\n{self.CONSTRAINTS}'  
         if not human_design_sop:
             task_type_desc = "\n".join([f"- **{tt.type_name}**: {tt.value.desc}" for tt in UserTaskType])
             prompt = self.PROMPT_TEMPLATE.format(
@@ -90,7 +62,7 @@ class WritePlanner(Planner):
         plan_confirmed = False
         while not plan_confirmed:
             context = self.get_useful_memories()
-            rsp = await WritePlan().run(context, max_tasks, self.human_design_sop)
+            rsp = await WriteReportPlan().run(context, max_tasks, self.human_design_sop)
             self.working_memory.add(Message(content=rsp, role="assistant", cause_by=WritePlan))
             # precheck plan before asking reviews
             is_plan_valid, error = precheck_update_plan_from_rsp(rsp, self.plan)
