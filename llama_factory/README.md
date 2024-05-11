@@ -2,9 +2,9 @@
 
 
 
-#                                   Llama_factory_SFT
+#                                   SFT
 
-采用逐行`调试`的方法，细节来看`SFT`代码
+本项目主要介绍 llama_factory 主要核心主体代码，如果对`peft`和`transformers`包很熟悉的话，不难理解。正文开始：采用逐行`调试`的方法，细节来看`SFT`代码
 
 ~~~mermaid
 graph LR
