@@ -202,7 +202,7 @@
 
 self.h 是整个`transformers`结构图，如下图所示。
 
-![image-20231122184948035](.\assets\image-20231122184948035.png)
+![image-20231122184948035](./assets/qwen/image-20231122184948035.png)
 
 
 
