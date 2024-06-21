@@ -30,79 +30,17 @@
 
 ​       方式2：Agent 根据用户问题，自动生成一连贯的可执行的操作计划，并发送给后端程式，后端程式发起响应，缺点在于 Agent 系统与平台系统**代码层次上是高耦合**。优点在于：无需对操作界面进行感知，有效降低大模型理解，推理的难度，易于实现。
 
-综上：考虑简单，易于落地原则，采用方式2进行工程设计。
 
-+ ### **实现过程**
 
-  -  需求分析：分析用户`query` 具体任务，比如：**请帮我识别图纸E-3-2的97和98页内容，并将数据导入软件中**。
-  - 事先制定工作流程SOP (API调用层次关系和拓扑结构顺序)， 明确需要哪些操作(服务API)能够完成用户的目标。
-
-​          本案例 定义`API`工具层次结构图如下：
+​                                
 
 
 
-​                                <img src="./assets/api_struct.png" style="zoom: 67%;" />
-
- 			Function calling：为增强大模型准确理解调用API的能力，API 功能信息，参数信息必须精准无误，可以采用`chatgpt`优化每个`api`的`profile`信息。详情如下：
-
-```python
-
-            {
-                "name_for_human": "打开批量识别表格",
-                "name_for_model": "Open_batch_recognition_table",
-                "description_for_model": "用户可以打开批量识别表格功能。只有先启动该功能,后续才能将批量识别图纸导入软件中的操作",
-                'parameters': ''     
-            },
-
-            {
-                "name_for_human": "选择图纸",
-                "name_for_model": "Select_drawings",
-                "description_for_model": "用户选择想要识别的图纸页",
-                'parameters': [
-                        {
-                            'name': 'folder',
-                            'description': "图纸 id 或者图纸目录名，比如路面工程表",
-                            'required': True,
-                            'schema': {'type': 'string'},
-                        },
-                        {
-                            'name': 'page',
-                            'description': "可以选择想要识别的图纸页,有多个数值中间用逗号分隔",
-                            'required': True,
-                            'schema': {'type': 'string'},
-                        },
-                            ]   
-            },
-            
-            {
-                "name_for_human": "Select_next_step",
-                "name_for_model": "Select_next_step",
-                "description_for_model": "选择完毕需要识别的图纸后,通过该API用户可以进入下一步进行设置标签",
-                'parameters': ''
-            },
-            {
-                "name_for_human": "Set_label_next_step",
-                "name_for_model": "Set_label_next_step",
-                "description_for_model": "用户设置完毕标签后,通过该API用户可以进入下一步 匹配分部分项",
-                'parameters': ''
-            },
-
-            {
-                "name_for_human": "匹配分部分项-完成",
-                "name_for_model": "Match_subitems_Complete",
-                "description_for_model": "通过该API确认完成全部批量识别表格操作,图纸量内容会被写入软件中,流程执行结束。",
-                'parameters': ''
-            }
-
-```
-
-+ ### 测试实现结果
-
-<img src="./assets/test.png" style="zoom: 67%;" />
+### 
 
 ​     
 
-测试结果分析：`agent`可以按照标准工作流(SOP)完成用户的任务，能够从用户 query 中正确选择API和解析准确API参数信息。当前执行任务失败时，会自动返回上一节点，重新执行运算，实现证实该方案可行性。
+
 
 
 
