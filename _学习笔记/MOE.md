@@ -4,7 +4,7 @@
 
   + **模型设计：**
 
-    ![image-20240604100017996](.\assets\moe\gshard.png)
+    ![image-20240604100017996](./assets/moe/gshard.png)
 
   + **特点:**
 
@@ -32,7 +32,7 @@
 
   +  **模型设计**
 
-    ![image-20240604103618501](.\assets\moe\Switch_Transformer.png)
+    ![image-20240604103618501](./assets/moe/Switch_Transformer.png)
 
   + **特点：**
 

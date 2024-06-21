@@ -4,13 +4,13 @@
 
   `causalLM` 模型采用自回归（`auto_regressive`）的方法，在推理过程通常分为两个阶段：**prefill和decode**。**通常会使用KV cache技术存储已完成计算的信息(每层每头k，v), 加速推理**。
 
-  <img src=".\assets\kv_cache\kv_cache.png" style="zoom: 70%;" />
+  <img src="./assets/kv_cache/kv_cache.png" style="zoom: 70%;" />
 
   + **Prefill**:
 
     **预填充阶段**: 把整段`prompt`喂给模型做`forward`计算。如果采用`KV cache`技术，这个阶段中会把`prompt `过 $ W_k $，$W_v$  后得到的$X_k$，$X_v$​ 保存在**cache_k和cache_v**中，这样在对后面的 `token` 计算 `attention` 时，我们就不需要对前面的 `token` 重复计算$X_k$，$X_v$，大幅度节省推理时间。
 
-    <img src=".\assets\kv_cache\prefill.png" style="zoom:85%;" />
+    <img src="./assets/kv_cache/prefill.png" style="zoom:85%;" />
 
     
 
@@ -20,7 +20,7 @@
 
     **由于`Decode`阶段的是逐一生成`token`的，因此它不能像prefill阶段那样能做大段`prompt`的并行计算，所以在LLM推理过程中，Decode阶段的耗时一般是更大的。**
 
-    <img src=".\assets\kv_cache\decoder.png" style="zoom:50%;" />
+    <img src="./assets/kv_cache/decoder.png" style="zoom:50%;" />
 
     设输入序列的长度为 $s$ ，输出序列的长度为$ n$ ，模型深度为$l$，维度为$h$,以 FP16 来保存KV cache，那么KV cache的峰值显存占用大小为 $b(s+n)h∗l∗2∗2=4blh(s+n)$ 。
     
@@ -39,7 +39,7 @@
 
   下图展示了一个13B的模型在 A100 40GB 的 gpu上做推理时的显存占用分配，others表示forward过程中产生的激活值(activation）的大小。
 
-  <img src=".\assets\kv_cache\A100.png" style="zoom:50%;" />
+  <img src="./assets/kv_cache/A100.png" style="zoom:50%;" />
 
   + **方式1：量化参数**
 
@@ -136,7 +136,7 @@
   
   GQA的思想也很朴素，它就是将所有Head分为$g$个组（$g$可以整除$ℎ$），每组共享同一对K、V，用数学公式表示为:
   $$
-    o_t=[o^{(1)}_t,o^{(2)}_t,⋯,o^{(h)}_t]  \\
+  o_t=[o^{(1)}_t,o^{(2)}_t,⋯,o^{(h)}_t]  \\
     o^{(s)}_t=Attention(q^{(s)}_t,k_{≤t}^{([sg/h])},v_{≤t}^{([sg/h])}) \\
     ≜\frac{∑_{i≤t}exp(q^{(s)}_tk_{i}^{([sg/h])_T})v_i^{([sg/h])}}{∑_{i≤t}exp(q^{(s)}_tk_i^{([sg/h])_T})}   \\
     q^{(s)}_i=x_iW^{(s)}_q∈R^{d_k},W^{(s)}_q∈R^{d×d_k} \\
@@ -151,7 +151,7 @@
   
   首先分析`GQA`在投影后做什么？首先它将向量对半分为两份分别作为K、V，然后每一份又均分为  𝑔 份，每一份复制 ℎ/𝑔 次，以此来“凑”够 h 个Attention Head所需要的K、V。  由于分割、复制都是简单的线性变换，所以`MLA`的想法是将这些简单的线性变换换成一般的线性变换，以增强模型的能力。即：通过不同的投影矩阵再次让所有的K、V Head都变得各不相同。
   $$
-    o_t=[o^{(1)}_t,o^{(2)}_t,⋯,o^{(h)}_t]  \\
+  o_t=[o^{(1)}_t,o^{(2)}_t,⋯,o^{(h)}_t]  \\
     o^{(s)}_t=Attention(q^{(s)}_t,k^{(s)}_{≤t},v^{(s)}_{≤t}) \\
     ≜\frac{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})v_i^{(s)}}{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})}   \\
     q^{(s)}_i=x_iW^{(s)}_q∈R^{d_k},W^{(s)}_q∈R^{d×d_k} \\
@@ -190,7 +190,7 @@ $$
   
 
 
-![](.\assets\kv_cache\MLA.png)
+![](./assets/kv_cache/MLA.png)
 
 在推理时KV Cache只需要存$c_i$，新增的带RoPE的维度就可以用来补充位置信息，并且由于所有Head共享，所以也就只有在K Cache这里增加了$d_r$个维度。
 

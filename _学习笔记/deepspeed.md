@@ -22,7 +22,7 @@
 
     step3 :   每一个节点上都有一个包含局部最后结果的区块;
 
-    ![image-20240606104421814](.\assets\deepspeed\scatter_reduce.png)
+    ![image-20240606104421814](./assets/deepspeed/scatter_reduce.png)
 
     
 
@@ -32,7 +32,7 @@
 
   ​       迭代N一1次直到过程结束, 使得每一个节点都包含了全部块数据结果;
 
-  ![image-20240606104118004](.\assets\deepspeed\all_gather.png)
+  ![image-20240606104118004](./assets/deepspeed/all_gather.png)
 
   ​	 思考：梯度累计问题想明白了，另一个是模型并行时参数分发的问题；例如怎么将 `GPU 1` 中的参数广播到`gpu2` 和`gpu3`上。  最简单实现逻辑：在`gpu2` 和`gpu3`开辟相同空间，执行`all_gather` 操作。
 
@@ -61,7 +61,7 @@
 
 ​		为了不降低计算效率，将前两个节点放在GPU，后两个节点不但计算量小还需要和Adam状态打交道，所以放在CPU上，Adam状态自然也放在内存中。
 
-​		![image-20240604174939574](.\assets\deepspeed\deepspeed.png)          
+​		![image-20240604174939574](./assets/deepspeed/deepspeed.png)          
 
   
 

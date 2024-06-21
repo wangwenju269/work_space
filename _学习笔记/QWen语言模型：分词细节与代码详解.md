@@ -8,7 +8,7 @@
 
  查看所使用的分词器是否在预设的变量 `TOKENIZER_MAPPING_NAMES` 里。
 
-![](.\assets\qwen\image-20231122184948035.png)
+![](./assets/qwen/image-20231122184948035.png)
 
 **step2 :  let's try to use the tokenizer_config file to get the tokenizer class.**
 
@@ -73,7 +73,7 @@ model_class.from_pretrained(
 
 大致查看下文件`model.safetensors.index.json` 所保存的文件信息，就是权重文件与图结构的映射关系图。
 
-![image-20231127173818687](C:\Users\wangwj-t\AppData\Roaming\Typora\typora-user-images\image-20231127173818687.png)
+![image-20231127173818687](./assets/qwen/image5.png)
 
 接着进入上下文管理器，实例化模型结构图
 

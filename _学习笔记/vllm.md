@@ -20,7 +20,7 @@
 
   **处理请求：**
 
-  ![image-20240523181558057](.\assets\vllm\vllm.png)
+  ![image-20240523181558057](./assets/vllm/vllm.png)
 
   逻辑内存（logical KV blocks）可理解为操作系统中的虚拟内存，每个block类比于虚拟内存中的一个page。
 
@@ -43,7 +43,7 @@
 
   + **Parallel Sampling**:
 
-    ![image-20240523190131166](.\assets\vllm\vllm2.png)
+    ![image-20240523190131166](./assets/vllm/vllm2.png)
 
     假定我们发给模型1个request，这个request中包含2个prompt/sample，记为Sample A1和Sample A2，这两个prompt完全一致，都为`Four score and seven years ago our`，我们希望模型对这两个prompt分别做续写任务。
 
@@ -59,7 +59,7 @@
 
   +  **Beam Search**
 
-    ![image-20240523190443626](.\assets\vllm\vllm3.png)
+    ![image-20240523190443626](./assets/vllm/vllm3.png)
 
     因为beam width = 4，这意味着根据beam search算法，在当前阶段我们生成了top 4个概率最大的token（记这4个token为beam candidate 0/1/2/3），它们分别装在block5，block6，block7和block8中。
 

@@ -73,7 +73,7 @@
   \end{array}
   \right)
   $$
-  <img src=".\assets\RoPE\RoPE.png" alt="image-20240522170755025" style="zoom:50%;" />
+  <img src="./assets/RoPE/RoPE.png" alt="image-20240522170755025" style="zoom:50%;" />
 
   
 
@@ -81,7 +81,7 @@
 
   + 推广到多维度空间：**高维向量，两两一组，分别旋转**
 
-    ​																	<img src=".\assets\RoPE\RoPE1.png" alt="image-20240522171055985" style="zoom: 50%;" />	     
+    ​																	<img src="./assets/RoPE/RoPE1.png" alt="image-20240522171055985" style="zoom: 50%;" />	     
 
   + $\theta$ 的取值采用 Sinusoidal位置编码的设置， 即$\theta_{i} = base ^{-2i/d}$， 为了节省算力，采用以下形式：
 
@@ -89,7 +89,7 @@
 
 + 周期性：对于每组分量，它的旋转弧度随着位置索引的增加而线性增加。每组分量的旋转都具有周期性,越靠后的分组，它的旋转速度越慢,正弦函数的周期越大、频率越低。
 
-  <img src=".\assets\RoPE\RoPE4.png" style="zoom:50%;" />
+  <img src="./assets/RoPE/RoPE4.png" style="zoom:50%;" />
 
   
 
@@ -97,7 +97,7 @@
 
   远程衰减性（Distant Decay）是指位置编码应能捕获到序列中相隔较远的单词之间的关系，即相隔较远的单词之间的位置编码相似度应较低。这有助于模型更好地理解和区分序列中的词序关系。具备远程衰减性的位置编码可以使模型学习到更多的长距离依赖关系，从而提高模型的性能。
 
-  <img src=".\assets\RoPE\RoPE3.png" style="zoom:50%;" />
+  <img src="./assets/RoPE/RoPE3.png" style="zoom:50%;" />
 
   规律： **base的不同取值会影响注意力远程衰减的程度。**当base大于500时，随着base的提升，远程衰减的程度会逐渐削弱。更大的base也将会使得注意力远程衰减的性质变弱，改变模型的注意力分布，导致模型的输出质量下降。但太小的base也会破坏注意力远程衰减的性质，例如base=10或100时，注意力分数不再随着相对位置的增大呈现出震荡下降的趋势。更极端的情况下，当base=1时，将完全失去远程衰减特性。
 
