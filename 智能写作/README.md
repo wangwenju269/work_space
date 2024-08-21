@@ -8,7 +8,7 @@
 
 + 技术沉淀：
 
-  参考本人《智能写作.md》文件
+  参考本人博客： [智能写作](https://blog.csdn.net/weixin_43214046/article/details/140763218)
 
 + 想法：
 
