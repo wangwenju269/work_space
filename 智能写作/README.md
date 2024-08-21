@@ -91,9 +91,13 @@
 
 + 目录说明： 
 
-​              data：保存用户上传文件、保存文件解析向量存储、文件输出目录。
+   data：保存用户上传文件、保存文件解析向量存储、文件输出目录。
 
-​              ai_writer： 代码执行文件，放置在 metagpt/ext 目录下，启动脚本 document.py
+    ai_writer： 代码执行文件，放置在 metagpt/ext 目录下，启动脚本 document.py
+
+​              
+
+​             
 
 
 
