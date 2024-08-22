@@ -8,7 +8,7 @@
 
 + 技术沉淀：
 
-  参考本人博客： [智能写作](https://blog.csdn.net/weixin_43214046/article/details/140763218)
+  参考本人博客： [智能写作](https://blog.csdn.net/weixin_43214046/article/details/140763218)    [metagpt 源码解读](https://blog.csdn.net/weixin_43214046/article/details/140042393)   [llama-index 检索](https://blog.csdn.net/weixin_43214046/article/details/140718306)
 
 + 想法：
 
