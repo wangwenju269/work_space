@@ -2,19 +2,19 @@
 
   + `Shell` 启动命令：
 
-    ```shell
+    ```latex
   bash scripts/run_for_7B_in_Linux_or_WSL.sh
     ```
 
     打开 `shell`  脚本，调用执行 `shell` 和参数信息：
   
-    ```shell
+    ```latex
   bash scripts/base_run.sh -s 'LinuxOrWSL' -m 19530 -q 8777 -M 7B
     ```
 
     命令行参数解析：
   
-    ```shell
+    ```latex
     while getopts ":s:m:q:M:cob:k:n:l:w:" opt; do
       case $opt in
       s) system="$OPTARG"
@@ -49,7 +49,7 @@
   
     安装调试工具`debugpy`, 修改`shell` 启动脚本文件如下：
   
-    ```shell
+    ```latex
     # 启动qanything-server服务
     CUDA_VISIBLE_DEVICES=1 python3 -m debugpy --listen 5881 --wait-for-client  qanything_kernel/qanything_server/sanic_api.py
     ```
