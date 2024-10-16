@@ -2,16 +2,18 @@
 
   + `Shell` 启动命令：
 
+    
+  
     ```latex
-  bash scripts/run_for_7B_in_Linux_or_WSL.sh
+   bash scripts/run_for_7B_in_Linux_or_WSL.sh
     ```
-
+  
     打开 `shell`  脚本，调用执行 `shell` 和参数信息：
   
     ```latex
   bash scripts/base_run.sh -s 'LinuxOrWSL' -m 19530 -q 8777 -M 7B
     ```
-
+  
     命令行参数解析：
   
     ```latex
