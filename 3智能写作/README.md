@@ -4,7 +4,7 @@
 
    项目主要辅助人类生成长文档，同时代码也将提交开源项目`METAGPT`仓库中，努力为开源社区做出贡献。
 
-    https://github.com/user-attachments/assets/0ff91f2f-e8bb-4550-8eba-278996ef6624
+   https://github.com/user-attachments/assets/8aff7a46-1d66-473c-9346-669c6ab1a02a
 
 + 技术沉淀：
 
