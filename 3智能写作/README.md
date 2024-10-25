@@ -4,6 +4,8 @@
 
    项目主要辅助人类生成长文档，同时代码也将提交开源项目`METAGPT`仓库中，努力为开源社区做出贡献。
 
+    https://github.com/user-attachments/assets/0ff91f2f-e8bb-4550-8eba-278996ef6624
+
 + 技术沉淀：
 
   请先仔细参考本人博客： [智能写作](https://blog.csdn.net/weixin_43214046/article/details/140763218)    [metagpt 源码解读](https://blog.csdn.net/weixin_43214046/article/details/140042393)   [llama-index 检索](https://blog.csdn.net/weixin_43214046/article/details/140718306)
