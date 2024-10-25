@@ -1,14 +1,10 @@
-
-
 #                                   智能写作
 
 + 贡献：
 
    项目主要辅助人类生成长文档，同时代码也将提交开源项目`METAGPT`仓库中，努力为开源社区做出贡献。
 
-   [Gradio 演示](./assets/demo.mp4)
-
-   <video src="./assets/demo.mp4" autoplay="true" controls="controls" width="800" height="600"> </video>
+   <video src='./assets/demo.mp4' />
 
 + 技术沉淀：
 
