@@ -183,7 +183,7 @@
 
     **上述论文的写的不太好理解，看不懂的话，请看我的理解，下图**
 
-    ![image-20241026001144872](.\assets\quiet_start\forward.jpg)
+    ![image-20241026001144872](./assets/quiet_start/forward.jpg)
 
     上图中 `mix_logits`  是经过上述 `混合头` 处理过得到的采样分布 `residual_logits`(如上)，包含采用思考和未思考的信息；  
 
@@ -227,7 +227,7 @@
       $$
       \nabla  obj_{\theta}  = \frac{1}{N} \sum^{N}_{n = 1} \sum^{T}_{t = 1}  R(\tau^{n} -b ) \nabla logp(a_t|s_t,\theta) \\
       $$
-
+    
       $$
       \R(\tau) = \\
       Loss(X2|X1, start,T1,T2,T3,end;\theta) - Loss(X2|X1;\theta)\\ 
@@ -235,21 +235,21 @@
       Loss(X4|X1, start,T1,T2,T3,end,\theta)- Loss(X4|X1,X2,X3;;\theta) \\+ 
       Loss(X5|X1, start,T1,T2,T3,end,X2,X3,X4;\theta) - Loss(X5|X1,X2,X3,X4;\theta)
       $$
-
+    
     **这个奖励分数可以理解为 熵减少的程度，加入在不思考直接回答，熵值是0.4；经过思考后回答，熵值是0.2；可以直观感受 思考带来的奖励分数是0.2，通过思考，熵向较少的方向进行。(困惑度也随之降低)**
-
+    
     现在计算 一批数据`Data`: 大小 `( bs,  seq_len)`,   在 $n_ahead_talkn\_ahead\_talk$  下， 会产生多少轨迹$τ\tau$ 呢?
-
+    
     答案是  $bs∗(seq_len−1−n_ahead_talk)bs * (seq\_len -1 - n\_ahead\_talk)$ 
-
+    
     即：批量序列里最后一个`token` 无 `label` , 且需要保证每条轨迹 $τ\tau$  要有 $n_ahead_talkn\_ahead\_talk$  用于监督`think` 的 `token label`， 看图体会。
-
+    
     + **每个token 想生成 多个 think ，该怎么办？**
-
+    
     上文主要介绍 每个`token ` 生成一条推理轨迹，如果想生成n条推理过程怎么处理呢？作者这里将批量样本输入做n次`Double` 处理, 即数据大小变为`(n*bs,seq_len)`，相同输入在`think` 阶段采样具有不同(随机性)，这就形成不同的推理理由。
-
+    
     当产生多个推理轨迹时，做去中心化，即：优化那些轨迹，其轨迹奖励分  **要高于** 所有轨迹奖励平均分 ； 
-
+    
     ```
     if self.trice_mode and self.n_passes > 1:
         batched_policy_reward = train_policy_reward.reshape(-1, self.n_passes, train_policy_reward.shape[-1])
@@ -257,16 +257,17 @@
         train_policy_reward = batched_policy_reward - batched_policy_reward.mean(dim=1, keepdim=True)
         train_policy_reward = train_policy_reward.reshape(-1, train_policy_reward.shape[-1])
     ```
-
+    
     + **教师强制**
-
+    
       很好理解，就是不根据 `mix_logits` 的分布做概率采样，而是做强制采样操作，强制采样下一个真实的`groud_true` `token`;
-
+    
       例如：一条轨迹$τ\tau$ 是 `{X1, start,T1,T2,T3,end,X2,X3,X4,X5 }`， 强制采样的token为`{start,end,X2,X3,X4,X5},`;
-
+    
       根据概率分布 `rm_logits` 随机采样的是：`｛T1,T2,T3｝`。
 
-      
+
+​      
 
 + #### **损失函数**
 
