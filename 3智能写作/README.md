@@ -6,7 +6,7 @@
 
    项目主要辅助人类生成长文档，同时代码也将提交开源项目`METAGPT`仓库中，努力为开源社区做出贡献。
 
-   `Gradio 演示`：
+   [Gradio 演示](./assets/demo.mp4)
 
    <video src="./assets/demo.mp4" autoplay="true" controls="controls" width="800" height="600"> </video>
 
@@ -24,7 +24,7 @@
 
 + **技术路线：**
 
-  + step1 : **模型生成大纲，或人工设定大纲。**
+  + step1 : **模型生成大纲，或人工设定大纲。**s
 
   + step2 :  **针对每个细粒度(子标题)，执行写操作**
 
