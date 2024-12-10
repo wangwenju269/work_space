@@ -1,10 +1,9 @@
-from typing import List, Tuple,Union
-import json ,re 
+from typing import List, Tuple, Union
+import json
+import re
 from llama_index.core.schema import TextNode
 from metagpt.actions import Action
 from metagpt.schema import Message
-from metagpt.config2 import Config
-from metagpt.const import METAGPT_ROOT
 NO_RESPONSE = '<None>'
 SYSTEM_PROMPT_TEMPLATE_ZH = """您是一个擅长文档问答的专家，可以根据文档内容回答用户问题。
 
@@ -93,53 +92,45 @@ PROMPT_TEMPLATE = {
     'en': PROMPT_TEMPLATE_EN,
 }
 
-DEFAULT_LENS = 1024
-
 class RelateFilter(Action):
     
-    def __init__(self):
-        read_config = Config.read_yaml( METAGPT_ROOT / 'config/qwen2-7B.yaml')
-        super().__init__(config = Config(**read_config) if read_config else None )
-       
-           
-    async def run(  self,
-                    instruction: str = None,
-                    knowledge: str = '',
-                    lang: str = 'zh',
-                    **kwargs) -> str :
+    async def run(self,
+                  instruction: str = None,
+                  knowledge: str = '',
+                  lang: str = 'zh',
+                  **kwargs) -> str:
         
         system_prompt = SYSTEM_PROMPT_TEMPLATE[lang].format(no_response=NO_RESPONSE)
         prompt = PROMPT_TEMPLATE[lang].format(ref_doc=knowledge, instruction=instruction)
         context = self.llm.format_msg([Message(content=prompt, role="user")])
-        rsp = await self.llm.aask(context, system_msgs = [system_prompt], stream = False, **kwargs)
+        rsp = await self.llm.aask(context, system_msgs=[system_prompt], stream=False, **kwargs)
         return rsp
     
-  
     def parser_out_filter_nodes(self,
-                                nodes : Union[TextNode,str] , 
-                                rsp : str ,
-                                batch_size : int = 5
-                                )-> Tuple[List[TextNode], List[str]]: 
-        new_nodes, pre_answer = [], [] 
+                                nodes: Union[TextNode, str],
+                                rsp: str) -> Tuple[List[TextNode], List[str]]:
+        
+        new_nodes, pre_answer = [], []
         for ans, node in zip(rsp, nodes):
             try:
-                content_dict = json.loads(ans.replace("\n", "").replace('\r', ''))
-                pa_res, pa_cotent, relevance_level = content_dict['res'], content_dict['content'] , content_dict['relevance_level']
-                if  relevance_level == '高'  or  relevance_level == 'High':
-                    new_nodes.append(node) 
-                    pre_answer.append(pa_cotent)
-                if pa_res == 'none':
-                    continue   
+                ans = ans.replace("\n", "").replace('\r', '')
+                content_dict = json.loads(ans)
+                pa_res = content_dict['res']
+                pa_content = content_dict['content']
+                relevance_level = content_dict['relevance_level']
+                if pa_res == 'none': continue
+                if (relevance_level == '高' or relevance_level == 'High'):
+                    new_nodes.append(node)
+                    pre_answer.append(pa_content)
             except:
-                pa_cotent = re.sub(r'[{}"]|("res":\s*"ans"|"res":\s*"none"|"\s*content":\s*)', '', ans)
                 flag = 'res: ans, content:'
-                if pa_cotent.startswith(flag):
-                   new_nodes.append(node) 
-                   pre_answer.append(pa_cotent.replace(flag,'').strip())
-                
-        if  not new_nodes :  
-            return nodes,  ''
-        combined = ['\ncontext:'.join(pre_answer[i:i + batch_size]) for i in range(0, len(pre_answer), batch_size)]  
-        return  new_nodes , combined
+                pattern = r'[{}"]|("res":\s*"ans"|"res":\s*"none"|"\s*content":\s*)'
+                pa_content = re.sub(pattern, '', ans)
+                pa_content = pa_content.replace(flag, '').strip()
+                if pa_content.startswith(flag):
+                    new_nodes.append(node)
+                    pre_answer.append(pa_content)
+                    
+        return new_nodes, pre_answer
     
 

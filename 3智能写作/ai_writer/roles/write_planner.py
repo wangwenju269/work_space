@@ -1,7 +1,6 @@
 from __future__ import annotations
 import json
-import re
-from typing import Any
+from pydantic import Field, ConfigDict
 from metagpt.actions.di.write_plan import (
     precheck_update_plan_from_rsp,
     update_plan_from_rsp,
@@ -37,10 +36,16 @@ class DocumentPlan(Action):
     ]
     ```
     """
-    async def run(self, context: list[Message], max_tasks: int = 1, human_design_planner: bool = False) -> str:
-      
+    async def run(self, 
+                  context: list[Message],
+                  human_design_planner: bool, 
+                  max_tasks: int = 7,
+                  **kwargs
+                  ) -> str:
+        
         if  human_design_planner:
-            with    open(DATA_PATH/ 'ai_writer/outlines/human_design_planner.json', 'r', encoding='utf-8') as file:
+            save_outline_file = kwargs.pop('save_outline_file', DATA_PATH / 'ai_writer/outLines/human_design_planner.json')
+            with    open(save_outline_file, 'r', encoding='utf-8') as file:
                     rsp = json.dumps(json.loads(file.read()), ensure_ascii=False)                
         else:     
             prompt = self.PROMPT_TEMPLATE.format(
@@ -51,8 +56,9 @@ class DocumentPlan(Action):
 
 
 class WritePlanner(Planner):
+    model_config = ConfigDict(arbitrary_types_allowed=True, extra="allow")
     human_design_planner: bool = False
-    titlehierarchy: Any = None
+    titlehierarchy:TitleHierarchy = Field(default_factory = TitleHierarchy)
     async def update_plan(self, goal: str = "", context: str = "", max_tasks: int = 7, max_retries: int = 3):
         if goal:
             self.plan = Plan(goal=goal, context = context)
@@ -74,29 +80,16 @@ class WritePlanner(Planner):
                 continue
             _, plan_confirmed = await self.ask_review(trigger=ReviewConst.TASK_REVIEW_TRIGGER)
         update_plan_from_rsp(rsp=rsp, current_plan=self.plan)
-        self.titlehierarchy = self.process_response_and_build_hierarchy(rsp=rsp)
+        self.process_response_and_build_hierarchy(rsp=rsp)
         self.working_memory.clear()
 
 
     def post_process_chapter_id_or_name(self, rsp:str) -> str:
-        """
-        Post-process the response to replace chapter_id and chapter_name with task_id and instruction.
-        This method takes a response (rsp) and replaces any occurrences of "chapter_id" with "task_id"
-        and "chapter_name" with "instruction". 
-        
-        This is useful when the response contains references
-        to chapter identifiers and names that need to be updated to match the task's attributes.
-        """
-        # chapter_id save in current_task.task_id
-        # chapter_name save in current_task.instruction
         rsp =  rsp.replace("chapter_id","task_id")
         return rsp
     
     
     def precheck_from_rsp(self, rsp:str) -> bool:
-        """
-        Perform a pre-check on the response data to ensure it meets the expected format.
-        """
         try:
             rsp = json.loads(rsp)
             if not isinstance(rsp, list):
@@ -113,85 +106,82 @@ class WritePlanner(Planner):
         """
         Post-process the response data to update the title hierarchy.
         """
-        titlehierarchy = TitleHierarchy()
         rsp = json.loads(rsp)
         for element in rsp:  
-            titlehierarchy.add_recursive_titles(element)  
-        return  titlehierarchy  
-           
-
-    async def process_task_result(self,task_result):
+            self.titlehierarchy.add_recursive_titles(element)  
+        
+        
+    async def process_task_result(self, task_result):
         """
         Process the task result and ask the user for confirmation.
         This method processes the given task result and prompts the user for confirmation.
-        If the user confirms, it calls the `confirm_task` method with the current task,the task result, and the review.
+        If the user confirms, it calls the `confirm_task` method with the current task, the task result, and the review.
         """
-        review, task_result_confirmed = await self.ask_user_instruction(finished = True)
-        if  task_result_confirmed:
+        review, task_result_confirmed = await self.ask_user_instruction(finished=True)
+        if task_result_confirmed:
             await self.confirm_task(self.current_task, task_result, review)
-  
-  
-    async def ask_for_review(self, prompt:str):
+
+
+    async def ask_for_review(self, prompt: str):
         """
-        Prompt the user for review input and handle the response.
-        This method interacts with the user to collect their review input. If the auto_run
-        flag is not set, it prompts the user with the given prompt and waits for their input.
-        If the input matches certain exit words, the program will exit. Otherwise, the input
-        is processed and returned.
         Parameters:
         prompt (str): The prompt to display to the user. Default is an empty string.
+
         Returns:
         tuple: A tuple containing the user's response and a boolean indicating whether the input was confirmed.
         """
-        if  not self.auto_run:
-            rsp = input(prompt)
+        if not self.auto_run:
+            rsp = '' or input(prompt)
             if rsp.lower() in ReviewConst.EXIT_WORDS:
                 exit()
-            confirmed = rsp.lower() in ReviewConst.CONTINUE_WORDS or ReviewConst.CONTINUE_WORDS[0] in rsp.lower()
-            if  not confirmed:
-                    self.working_memory.add(Message(content=rsp, role="user"))
-            else: 
-                rsp = '' 
-                
+            confirmed = (
+                rsp.lower() in ReviewConst.CONTINUE_WORDS
+                or ReviewConst.CONTINUE_WORDS[0] in rsp.lower()
+            )
+            if not confirmed:
+                self.working_memory.add(Message(content=rsp, role="user"))
             return rsp, confirmed
         else:
-            return '' , True
-        
+            return '', True
 
-    @colored_decorator('\033[1;30;47m') 
+
+    @colored_decorator('\033[1;30;47m')
     async def ask_user_context(self):
-            context = (
-                f"Please add detailed writing context to enhance the text.\n"
-                f"No relevant content to elaborate on, just respond with 'yes'.\n"
-                ) 
-            context, c_confirmed = await self.ask_for_review(context)
-            return context, c_confirmed 
-            
-    @colored_decorator('\033[1;30;42m')     
-    async def ask_user_instruction(self, finished = False):
-            if finished:
-                instruction = f"Does the chapter's paragraph meet your requirements? Reply 'yes' or 'no'.\n"
-            else:
-                instruction = (
-                                f"Please add instruction to enhance the text. \n"
-                                f"no instruction, simply reply with yes."
-                                f"If you wish to revert to the original, just respond with 'redo'.\n" 
-                            ) 
-            # Calculate confirmed based on the context and instruction received
-            instruction, i_confirmed = await self.ask_for_review(instruction)
-            return instruction, i_confirmed 
-    
-    
+        context = (
+            f"Please add detailed writing context to enhance the text.\n"
+            f"No relevant content to elaborate on, just respond with 'yes'.\n"
+        )
+        context, c_confirmed = await self.ask_for_review(context)
+        return context, c_confirmed
+
+
+    @colored_decorator('\033[1;30;42m')
+    async def ask_user_instruction(self, finished=False):
+        if finished:
+            instruction = f"Does the chapter's paragraph meet your requirements? Reply 'yes' or 'no'.\n"
+        else:
+            instruction = (
+                f"Please add instruction to enhance the text. \n"
+                f"no instruction, simply reply with yes."
+                f"If you wish to revert to the original, just respond with 'redo'.\n"
+            )
+        # Calculate confirmed based on the context and instruction received
+        instruction, i_confirmed = await self.ask_for_review(instruction)
+        return instruction, i_confirmed
+
+
     async def ask_review_template(self):
-            """
-            Ask the user for context and instruction to enhance the text of a given task.
-            This method prompts the user to provide context and instruction to enhance the text
-            of the given task. 
-            """ 
-            context, c_confirmed = await self.ask_user_context()
-            instruction, i_confirmed = await self.ask_user_instruction()
-            confirmed = ((c_confirmed or not context) and i_confirmed) or (not context and not instruction)
-            return instruction, context, confirmed    
+        """
+        Ask the user for context and instruction to enhance the text of a given task.
+        This method prompts the user to provide context and instruction to enhance the text
+        of the given task.
+        """
+        context, c_confirmed = await self.ask_user_context()
+        instruction, i_confirmed = await self.ask_user_instruction()
+        confirmed = (
+            (c_confirmed or not context) and i_confirmed
+        ) or (not context and not instruction)
+        return instruction, context, confirmed  
 
  
 

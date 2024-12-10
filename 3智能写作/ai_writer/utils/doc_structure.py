@@ -1,3 +1,4 @@
+import json
 class Node:
         def __init__(self, name='',instruction = '', content = ''):
             self.name = name
@@ -5,12 +6,13 @@ class Node:
             self.content = content
             self.subheading = {}
 
-
 class TitleHierarchy:
     def __init__(self):
         self.root = Node()
-    
-
+        
+    def clear(self):
+        self.root = Node()     
+        
     def add_recursive_titles(self, titles):
         """
         Add recursive titles to the hierarchy.
@@ -75,6 +77,7 @@ class TitleHierarchy:
 
         return subheadings
     
+    
     def set_obj_by_id(self, path: str):
         """
         Set the content of a node identified by its path.
@@ -106,7 +109,6 @@ class TitleHierarchy:
         current = self.set_obj_by_id(path)
         current.instruction = content     
         
-        
     def set_content_by_headings(self, heading_context_maps):
         """
         Set the contents of nodes identified by their paths.
@@ -118,8 +120,6 @@ class TitleHierarchy:
             path, _  =  title.split(' ')
             self.set_content_by_id(path, content)
 
-
-    
     def get_chapter_obj_by_id(self, id: str) -> str:
         """
         Get the chapter name by its hierarchical ID.
@@ -154,3 +154,65 @@ class TitleHierarchy:
             output.extend(self.traverse_and_output(child, level + 1))
 
         return output
+    
+    def to_json(self):
+        """
+        Convert the entire hierarchy starting from self.root to a JSON object.
+
+        return: A JSON-compatible dictionary representing the hierarchy.
+        """
+        return self._node_to_json(self.root)
+
+    def _node_to_json(self, node):
+        """
+        Recursively convert a Node and its children to a JSON-compatible dictionary.
+
+        param node: The Node to convert.
+        return: A JSON-compatible dictionary representing the Node and its children.
+        """
+        if not node:
+            return None
+        
+        json_node = {
+            "name": node.name,
+            "instruction": node.instruction,
+            "content": node.content,
+            "subheadings": {}
+        }
+
+        for key, child in node.subheading.items():
+            json_node["subheadings"][key] = self._node_to_json(child)
+            
+        return json_node
+
+    def to_json_string(self):
+        """
+        Convert the entire hierarchy to a JSON string.
+
+        return: A JSON string representing the hierarchy.
+        """
+        return json.dumps(self.to_json(), indent=4,  ensure_ascii=False)
+    
+    def to_list(self):
+        """
+        Convert the entire hierarchy starting from self.root to a list of tuples.
+
+        return: A list of tuples representing the hierarchy in the form [(task_id, name, instruction, content)].
+        """
+        return self._node_to_list(self.root)
+
+    def _node_to_list(self, node):
+        """
+        Recursively convert a Node and its children to a list of tuples.
+
+        param node: The Node to convert.
+        return: A list of tuples representing the Node and its children.
+        """
+        if not node:
+            return []
+        
+        result = []
+        for key, child in node.subheading.items():
+            result.append((key, child.name, child.instruction, child.content))
+            result.extend(self._node_to_list(child))
+        return result
