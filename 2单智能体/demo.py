@@ -1,6 +1,3 @@
-import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
-
 from core_agent.llm import LLMFactory
 from core_agent.agent import AgentExecutor
 from core_agent.agent_types import AgentType
