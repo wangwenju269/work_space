@@ -1,4 +1,22 @@
-# 项目指南
+# <center>目录</center>
+
+本仓库致力于记录个人在项目实践中的宝贵成果与学习心得。学习笔记部分涵盖了论文综述及主流模型框架的源码解析，深入理解前沿技术。传统NLP文件夹则收录了早期基于轻量级BERT模型的NLP项目，包括信息抽取、关系分类等经典任务。接下来，将重点介绍两个核心项目：**大模型智能写作**（支持论文、标书一键生成）和**基于Agent的软件操作流程自动化**，展示如何通过技术手段提升工作效率。在深入了解项目之前，您也可以参考个人几篇代表性的博客，进一步拓展相关领域的知识。
+
+- **CSDN:**
+  - [RoPE详细解读](https://blog.csdn.net/weixin_43214046/article/details/140042726?spm=1001.2014.3001.5501)
+  - [metagpt 源码解读](https://blog.csdn.net/weixin_43214046/article/details/140042393)
+  - [llama-index 检索](https://blog.csdn.net/weixin_43214046/article/details/140718306)
+  - [DPO算法推导](https://blog.csdn.net/weixin_43214046/article/details/140042177?spm=1001.2014.3001.5501)
+  - [quantization_PTQ](https://blog.csdn.net/weixin_43214046/article/details/140043889?spm=1001.2014.3001.5501)
+  - [Llama-factory源码详细解读](https://blog.csdn.net/weixin_43214046/article/details/140260242?spm=1001.2014.3001.5501)
+  - [MOE](https://blog.csdn.net/weixin_43214046/article/details/140260910?spm=1001.2014.3001.5501)
+  - [vllm理解](https://blog.csdn.net/weixin_43214046/article/details/140260029?spm=1001.2014.3001.5501)
+  - ...
+- **AINLP 公众号:**
+  - [Qwen2 源码解析](https://mp.weixin.qq.com/s/JAehUA4OFKmT2fcsS4U4pQ)
+  - [一网打尽智普长文本训练技术](https://mp.weixin.qq.com/s/7vr-JalvF94fxevOIcZDYQ)
+
+------
 
 ###  智能文档一键生成
 
