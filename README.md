@@ -12,9 +12,11 @@
   - [MOE](https://blog.csdn.net/weixin_43214046/article/details/140260910?spm=1001.2014.3001.5501)
   - [vllm理解](https://blog.csdn.net/weixin_43214046/article/details/140260029?spm=1001.2014.3001.5501)
   - ...
-- **AINLP 公众号:**
+- **公众号:**
   - [Qwen2 源码解析](https://mp.weixin.qq.com/s/JAehUA4OFKmT2fcsS4U4pQ)
   - [一网打尽智普长文本训练技术](https://mp.weixin.qq.com/s/7vr-JalvF94fxevOIcZDYQ)
+  - [O1系列：Quiet-STaR 论文深度解读](https://mp.weixin.qq.com/s/KKWKt-kJcZ2RPrSWQnigUw)
+  - ...
 
 ------
 

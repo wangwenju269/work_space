@@ -244,7 +244,3 @@ $$
 $$
 s^{(RE)}_{j,k}=Biaffine(h^{head}_j,h^{(tail)}_k)\\ Biaffine(x_1,x_2)= x^T_1Ux_2 + W(x_1||x_2)+b
 $$
-   
-
-
-
