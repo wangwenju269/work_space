@@ -18,6 +18,8 @@
   - [O1系列：Quiet-STaR 论文深度解读](https://mp.weixin.qq.com/s/KKWKt-kJcZ2RPrSWQnigUw)
   - ...
 
+若Github或博客阅读不便，相关PDF文件可在飞书中获取。 [飞书链接](https://icnpnkoo94pw.feishu.cn/drive/folder/NQh5fteudlNvx0d919NcDs02nCc)
+
 ------
 
 ###  智能文档一键生成
