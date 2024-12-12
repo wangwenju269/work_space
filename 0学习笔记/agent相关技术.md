@@ -1,14 +1,17 @@
 ## <center> **Agent  技术报告**</center>
 
 #### *SELF-REFINE*      
+
   过程描述：给定模型 M 生成的初始输出，将其反馈回同一模型 M 以获取反馈。然后，将反馈再次传递回同一模型，以精炼之前生成的草稿。
   ![](./assets/images_agent/self_refine.png)
 
 总结：当大型语言模型（LLM)在首次尝试时无法生成最优输出时，LLM 通常能够提供有用的反馈并相应地改进其输出。
 
 ------
+
 #### SELF-CHECK
-+ **背景**：
+
+* **背景**：
   ​论文研究是否可以用于识别逐步推理中的每个错误。为此，提出了一种零样本验证方案来识别这些错误。然后，使用这种验证方案通过对其在不同生成答案上执行加权投票来提高问答性能。生成器的输入是一个问题，其输出是以 [步骤 1, 步骤 2, ..., 步骤 N] 形式的多步解决方案。SelfCheck 首先检查解决方案中每一步的正确性，然后将逐步检查的结果整合起来，形成整个解决方案的置信度得分。
   **验证方案（verification scheme）的具体实现方式**
   一种简单但不可行的方法是：将当前步骤及其所有上下文输入到大型语言模型（LLM）中，并直接要求 LLM “检查该步骤的正确性”。然而，这种方法存在以下问题：
@@ -16,38 +19,54 @@
   + 任务太难： 需要理解步骤中的关键内容，然后从上下文中收集所有相关信息。
   + 预训练阶段没有该任务：这在大多数大型语言模型（LLM）的训练语料库中并不是一个常见的任务。
   
-+ **解决方案**：
+* **解决方案**：
   **target extraction**
-  ```python
+  
+
+```python
   The following is a part of the solution to the problem [question]: [Step 0, Step 1,..., Step i]. What specific action does the step [Step i] take? Please give a brief answer using a single sentence and do not copy the steps.
   ```
+
   **information collection** 
-  ```python
+  
+
+```python
   This is a math question: [question].
   The following is information extracted from the question: Information 0: [Information 0] Information 1: [Information 1]
   The following are the first a few steps in a solution to the problem: Step 0: [Step 0] Step 1: [Step 1] ... Step i-1: [Step i-1] Which previous steps or information does the next step [Step i] directly follow from?
   ```
+
   **step regeneration** 
-  ```python
+  
+
+```python
   We are in the process of solving a math problem. We have some information from the problem: Information 0: [Information I0] Information 1: [Information I1] ... 
   The following are some previous steps: Step 0: [Step S0] Step 1: [Step S1] ...
   The target for the next step is: [Target].
   Please try to achieve the target with the information from the problem or previous steps.
   ```
+
   **result comparison**
-  ```python
+  
+
+```python
   The following are 2 solutions to a math problem. Solution 1: [Regeneration output] Solution 2: [Step i]
   Compare the key points from both solutions step by step and then check whether Solution 1 "supports", "contradicts" or "is not directly related to" the conclusion in Solution 2. 
   Pay special attention to the difference in numbers.
   ```
+
   ![](./assets/images_agent/self-check.png)
 
 **总结**：描述了一个解决数学问题的四步流程，包括目标提取（提取某一步骤的具体动作）、信息收集（确定下一步骤的依赖信息）、步骤再生（根据已有信息生成下一步目标）和结果比较（比较两个解决方案的关键点并判断其关系)。通过这些步骤，系统能够自我检查并确保解决方案的准确性和连贯性。
 
 ------
+
 ####  Tool former
+
   ![](./assets/images_agent/toolformer.png)
-  ```python
+  
+
+```python
   Your task is to add calls to a Question Answering API to a piece of text. The questions should help you get information required to complete the text. You can call the API by writing "[QA(question)]" where "question" is the question you want to ask.
   Here are some examples of API calls:
   Input: Joe Biden was born in Scranton, Pennsylvania.
@@ -55,6 +74,7 @@
   Input: Coca-Cola, or Coke, is a carbonated soft drink manufactured by the Coca-Cola Company.
   Output: Coca-Cola, or [QA("What other name is Coca-Cola known by?")] Coke, is a carbonated soft drink manufactured by [QA("Who manufactures Coca-Cola?")]the Coca-Cola Company.
   ```
+
   **总结**：Toolformer 是一种工具，旨在通过在文本中插入对问答 API 的调用来增强文本生成的能力。它的主要目的是通过提问获取必要的信息，从而帮助完成文本。以下是 Toolformer 的几个关键点总结：
 
   + API 调用插入：Toolformer 会在文本中插入对问答 API 的调用，形式为 [QA(question)]，其中 question 是需要回答的问题。
@@ -62,16 +82,19 @@
   + 自动化流程：Toolformer 的流程是自动化的，能够根据文本内容自动生成合适的问题并调用 API 获取答案。
 
 ------
+
 #### LLM + P
 
-+ **背景**：
+* **背景**：
 
   把问题转化为 PDDL （*Planning Domain Definition Language*）格式的描述语言，通过调用通用规划器来解决规划问题，再把解决方案转化为可执行的动作，以更好地逻辑推理和规划等任务。这是第一个将传统规划方法的优点整合到LLMs的框架中。LLM+P接收一个用自然语言描述的规划问题，然后返回一个以自然语言表述的，解决该问题的正确（或最优）方案。            ![](./assets/images_agent/LLM+P.png)
 
-+ **方案**：
+* **方案**：
 
-  `PDDL`:  两个部分分别是领域定义和问题定义。问题定义描述了一个具体的规划问题，包括初始状态和目标状态。初始状态描述了规划问题开始时世界的状态，而目标状态描述了我们希望达到的状态。
-  ```
+`PDDL` :  两个部分分别是领域定义和问题定义。问题定义描述了一个具体的规划问题，包括初始状态和目标状态。初始状态描述了规划问题开始时世界的状态，而目标状态描述了我们希望达到的状态。
+  
+
+```
   (define (problem move-1)
     (:domain move)
     (:objects location1 location2 location3)
@@ -79,8 +102,11 @@
     (:goal (and (box-at location3)))
   )
   ```
+
   领域定义描述了可能的动作和它们的效果，每个动作都有一些前提条件，这些条件必须满足才能执行该动作，以及每个动作的效果，描述了动作执行后世界的状态如何改变。
-  ```
+  
+
+```
   (define (domain move)
     (:requirements :strips)
     (:predicates (robot-at ?x) (box-at ?x) (goal-at ?x))
@@ -88,76 +114,110 @@
     (:action move-box :parameters (?from ?to) :precondition (and (robot-at ?from) (box-at ?from)) :effect (and (not (box-at ?from)) (box-at ?to) (not (robot-at ?from)) (robot-at ?to)))
   )
   ```
+
   总结：首先，给定一个复杂问题（P），LLM 通过上下文学习推断出与之对应的 PDDL 问题文件。生成 PDDL 文件后，将其与提供的领域 PDDL 文件一同输入到经典规划方法中，生成 PDDL 方案。最后，LLM 将该方案翻译回自然语言，完成整个 LLM+P 流程。
 
 ------
+
 #### COT(Chain of Thought):
 
   思维链要求模型展示其思考过程，而不仅仅是给出答案。以下是两种思考过程：
   + 要求模型逐步详细思考（Let's think step by step） --> Zero-Shot-CoT
   + 通过提供问题、答案及相应的思考过程 --> Few-Shot-CoT
 
-  区别于传统的 Prompt 从输入直接到输出的映射 `<input——>output> `的方式，CoT 完成了从输入到思维链再到输出的映射，即 `<input——>reasoning chain——>output> `    
-​  ![cot](./assets/images_agent/COT.png)   
+  区别于传统的 Prompt 从输入直接到输出的映射 `<input——>output> ` 的方式，CoT 完成了从输入到思维链再到输出的映射，即 `<input——>reasoning chain——>output> `
+
+​  
+
+![cot](./assets/images_agent/COT.png)
+
+   
 
   NOTE: 一个完整的包含 CoT 的 Prompt 往往由指令（Instruction），逻辑依据（Rationale），示例（Exemplars）三部分组成。
+
       **Instruction**:描述问题并且告知大模型的输出格式
       **Rationale**:包含问题的解决方案、中间推理步骤以及与问题相关的任何外部知识
       **Exemplars**:以少样本的方式为大模型提供输入输出对的基本格式，每一个示例都包含：问题，推理过程与答案
 
   CoT 适用场景：《Why think step-by-step? reasoning emerges from the locality of experience》
+
       **任务需要复杂推理**
       **参数量的增加无法使得模型性能显著提升**
       **不适用于那些参数量较小的模型（20B以下）**
       **并且模型的训练数据应当于任务问题相关且彼此相互有较强的联结**   
 
 ------
+
 #### Self-consistency      
 
   Self-consistency CoT 使用手动设计的 Prompt 生成采样一组不同的推理路径，再通过“多数投票”找到推理步骤中“最一致”的路径，使用这条解码路径驱动原始的贪心解码方式来提示 CoT 性能。
-  ![sc](./assets/images_agent/COT_SC.png)
+  
+
+![sc](./assets/images_agent/COT_SC.png)
 
 ------
+
 #### tree of thought
-  ![tot](./assets/images_agent/TOT.png)
+
+  
+
+![tot](./assets/images_agent/TOT.png)
+
   它会根据当前的问题分解出多个可能，然后每一个树节点就是父节点的一个子问题，逐层扩散，遍布整个解空间，一些节点就直接会发现不合适而终止掉，达到了有效剪枝的作用。
   + Thought decomposition 
     即将问题进行相关步骤分解
+
   + Thought generator 
     思维生成，给定状态s，生成 k 个候选结果，一个是思维采样sample，另外一种的propose prompt 方式。
-    ​  ![img](./assets/images_agent/tot.image)
+    ​  
+
+![img](./assets/images_agent/tot.image)
 
   + State evaluator 状态评价器：评估器采用启发式方法
-  ```python
+  
+
+```python
       # 评估器 打分的策略     
           value_names = [_.split('\n')[-1] for _ in value_outputs]
           value_map = {'impossible': 0.001, 'likely': 1, 'sure': 20}  # TODO: ad hoc
           value = sum(value * value_names.count(name) for name, value in value_map.items())
   ```
+
   + **Search algorithm**：广度优先遍历和深度优先遍历算法
 
 ------
+
 #### CR(cumulative Reasoning):
 
-  `TOT`只能子问题分解，不能子问题合并。CR(累计推理)  ,  它首先会提出一个初步的想法，然后再对这个想法进行验证，看这个提案是否合适。如果提案合适，就将它添加到图的下一个节点，每一步都基于已经建立的图节点进行下一个思考节点的创建，这样发散、合并或删除直到达到最终目标状态，完备性和灵活性大大增强。
-  ![CR](./assets/images_agent/CR.png)
+`TOT` 只能子问题分解，不能子问题合并。CR(累计推理)  , 它首先会提出一个初步的想法，然后再对这个想法进行验证，看这个提案是否合适。如果提案合适，就将它添加到图的下一个节点，每一步都基于已经建立的图节点进行下一个思考节点的创建，这样发散、合并或删除直到达到最终目标状态，完备性和灵活性大大增强。
+  
+
+![CR](./assets/images_agent/CR.png)
 
 ------
+
 #### Rewoo
-  A.采用全局视角来解释原始问题，有效地将其分解为单个实例中的一系列子任务。
-  B.该策略充分利用模型的综合理解能力，一次性规划出所有子任务的问题解决步骤。 
-  c.这种方法强调了对整体任务进行整体理解和规划的重要性，尽管在处理单个子任务时可能缺乏灵活性
-  ![image-20240105162206219](./assets/images_agent/rewoo.png)
+
+  A. 采用全局视角来解释原始问题，有效地将其分解为单个实例中的一系列子任务。
+  B. 该策略充分利用模型的综合理解能力，一次性规划出所有子任务的问题解决步骤。 
+  c. 这种方法强调了对整体任务进行整体理解和规划的重要性，尽管在处理单个子任务时可能缺乏灵活性
+  
+
+![image-20240105162206219](./assets/images_agent/rewoo.png)
 
 ------
+
 #### ReAct
+
   LLM与环境交互: 以交错的方式生成推理轨迹和执行特定于任务的动作，从而实现两者之间更大的协同作用。
-  <img src="./assets/images_agent/REACT.png" alt="REACT" style="zoom:50%;" />
-  A.强调解决当前手头的子任务
-  B.成功解决正在进行的子任务后，再去请求 LLM 提供后续的子任务
+  <img src="./assets/images_agent/REACT.png" alt="REACT" style="zoom:50%; " />
+  A. 强调解决当前手头的子任务
+  B. 成功解决正在进行的子任务后，再去请求 LLM 提供后续的子任务
   模型能够在整个问题解决过程：【保持清晰】【集中焦点】【逐步解决】 【持续反馈】
 
-  ```python
+  
+
+```python
   Use the following format:
   Question: the input question you must answer
   Thought: you should always think about what to do
@@ -166,9 +226,12 @@
   Observation: the result of the action
   ... (this Thought/Action/Action Input/Observation can be repeated zero or more times)Final Answer: the final answer can successfully solve the original question.
   ```
+
 ------
+
 #### Reflect
-  (配备动态记忆和自我反思能力):一种不通过更新权值，而是通过语言反馈来强化语言代理的新框架。这种自我反射反馈作为一种“语义”梯度信号，为智能体提供了一个具体的改进方向，帮助它从之前的错误中学习，从而更好地完成任务。
+
+  (配备动态记忆和自我反思能力): 一种不通过更新权值，而是通过语言反馈来强化语言代理的新框架。这种自我反射反馈作为一种“语义”梯度信号，为智能体提供了一个具体的改进方向，帮助它从之前的错误中学习，从而更好地完成任务。
   1. 它轻量级，不需要对大型语言模型进行微调。
   2. 它允许更细致的反馈形式。
   3. 它支持对过往经验更明确且可解释的情景记忆形式。
@@ -176,7 +239,7 @@
 
   ![](./assets/images_agent/REFLACT.png)
 
- 例如，在一个多步骤决策任务中，当智能体接收到失败信号时，它可以推断出某个特定动作 a_i  导致了后续的错误动作 a(i+1) 和 a(i+2)，智能体可以明确指出，它本应采取不同的动作 a′(i),这将导致 a′{i+1}和 a′{i+2}, ，并将这一经验存储在其记忆中。在后续的试验中，智能体可以利用过去的经验，在时间 t 时通过选择动作 a′{i}，来调整其决策策略。
+ 例如，在一个多步骤决策任务中，当智能体接收到失败信号时，它可以推断出某个特定动作 a_i  导致了后续的错误动作 a(i+1) 和 a(i+2)，智能体可以明确指出，它本应采取不同的动作 a′(i), 这将导致 a′{i+1}和 a′{i+2}, ，并将这一经验存储在其记忆中。在后续的试验中，智能体可以利用过去的经验，在时间 t 时通过选择动作 a′{i}，来调整其决策策略。
 
 ![](./assets/images_agent/flexion.png)
 
@@ -188,17 +251,25 @@
   + 幻觉定义为 LLM 遇到了一系列连续的相同动作，这些动作导致LM在 环境中观察到了相同的结果。
 
 ------
+
 #### Functional Calling
+
   ![](./assets/images_agent/function calling.png)
 
 ------
+
 ####  AutoGPT：
+
   整个Auto-GPT执行可以分为任务构建、ChatGPT接口调用、命令执行、缓存处理四个部分。
   首先，创建一个初始的计划，然后进入主循环。系统会让模型判断在当前计划下该进行何种行动，接着会执行行动。执行完毕后，结果会写入下一次循环中。如此，每次决策都会基于之前的结果、记忆和计划，从而制定出新的行动方案。
   ![](./assets/images_agent/autogpt.png)
-  ![image-20231215095210572](./assets/images_agent/AUTOGPT_CODE.png)
+  
 
-  ```python
+![image-20231215095210572](./assets/images_agent/AUTOGPT_CODE.png)
+
+  
+
+```python
   You are Tom, Assistant
   Your decisions must always be made independently without seeking user assistance.
   Play to your strengths as an LLM and pursue simple strategies with no legal complications.
@@ -251,8 +322,11 @@
   } 
   Ensure the response can be parsed by Python json.loads
   ```
+
   **Assistant Reply**
-  ```python
+  
+
+```python
   {
     "thoughts": {
       "text": "I need to determine which command to use next. Let me review my objectives and assess the current situation.",
@@ -271,16 +345,24 @@
   ```
 
   **Human**
-  ```
+  
+
+```
   Human: Determine which next command to use, and respond using the format specified above:
   ```
 
 ------
-#### AutoGEN
-  `Autogpt`框架的核心是其代理协同工作的能力。每个代理都有其特定的能力和角色，定义代理之间的互动行为，即当一个代理从另一个代理收到消息时该如何回复。这种方式不仅仅是在定义代理和角色，还在定义它们如何协同工作，从而实现更优的任务完成效果。不仅仅是在定义代理和角色，你还在定义它们如何协同工作。
-  ![img](./assets/images_agent/autogen.png)
 
-  ```python
+#### AutoGEN
+
+`Autogpt` 框架的核心是其代理协同工作的能力。每个代理都有其特定的能力和角色，定义代理之间的互动行为，即当一个代理从另一个代理收到消息时该如何回复。这种方式不仅仅是在定义代理和角色，还在定义它们如何协同工作，从而实现更优的任务完成效果。不仅仅是在定义代理和角色，你还在定义它们如何协同工作。
+  
+
+![img](./assets/images_agent/autogen.png)
+
+  
+
+```python
   You are a helpful AI assistant.
   Solve tasks using your coding and language skills.
   In the following cases, suggest python code (in a python coding block) or shell script (in a sh coding block) for the user to execute.
@@ -293,7 +375,10 @@
   When you find an answer, verify the answer carefully. Include verifiable evidence in your response if possible.
   Reply "TERMINATE" in the end when everything is done.
   ```
-  ```python
+
+  
+
+```python
   class ConversableAgent(Agent):
         def __init__(...):
               self.register_reply([Agent, None], ConversableAgent.generate_oai_reply)
@@ -302,35 +387,37 @@
               self.register_reply([Agent, None], ConversableAgent.check_termination_and_human_reply)   
   ```
 
-  - ` AssistantAgent `设计为充当 AI 助手，默认使用 LLM，但不需要人工输入或代码执行。它可以编写 Python 代码，供用户在收到消息时执行。
-  - `UserProxyAgent` 是人类的代理代理，将人工输入作为代理的回复，并且还具有执行代码和调用函数的能力。当它在收到的消息中检测到可执行代码块且未提供人类用户输入时，会自动` UserProxyAgent` 触发代码执行。
+  + ` AssistantAgent `设计为充当 AI 助手，默认使用 LLM，但不需要人工输入或代码执行。它可以编写 Python 代码，供用户在收到消息时执行。
+  + `UserProxyAgent` 是人类的代理代理，将人工输入作为代理的回复，并且还具有执行代码和调用函数的能力。当它在收到的消息中检测到可执行代码块且未提供人类用户输入时，会自动` UserProxyAgent` 触发代码执行。
 
 ------
+
 #### XAgent：
 
-  <img src="./assets/images_agent/XAGENT.png" alt="img" style="zoom:150%;" />
+  <img src="./assets/images_agent/XAGENT.png" alt="img" style="zoom:150%; " />
 
-  - **外循环**：负责全局任务规划，将复杂任务分解为可操作的简单任务,高级任务管理和分配。
+  + **外循环**：负责全局任务规划，将复杂任务分解为可操作的简单任务, 高级任务管理和分配。
     - 动态规划：拆成子任务。
     - 迭代优化：[subtask split,  subtask deletion,  subtask  modification, subtask addition]
-  - **内循环**：负责局部任务执行，专注于各个子任务的低层执行和优化。
-    + **调度和工具检索**：根据子任务目标，检索相关工具。
-    + **工具执行**：采用 react 方式，顺序调用工具完成子任务 [thought, reasoning, plan, criticism]
-    + **反馈和反思**：对任务的完成结果，进行reflexion，反馈给 outer loop
+  + **内循环**：负责局部任务执行，专注于各个子任务的低层执行和优化。
+    - **调度和工具检索**：根据子任务目标，检索相关工具。
+    - **工具执行**：采用 react 方式，顺序调用工具完成子任务 [thought, reasoning, plan, criticism]
+    - **反馈和反思**：对任务的完成结果，进行reflexion，反馈给 outer loop
 
-  `toolserver`: 支持 多种工具，实现安全，高效，模块化。（ExecuteSheel，pythonnotebook）(集成16K数量APIs)
-    +  安全性：在Docker容器内运行工具可以保护主系统免受潜在危害
-    +  模块化：将代理规划和工具执行的角色分开，可以使代码更易于管理，更容易调试，并且具有可扩展性。
+`toolserver` : 支持 多种工具，实现安全，高效，模块化。（ExecuteSheel，pythonnotebook）(集成16K数量APIs)
+    -  安全性：在Docker容器内运行工具可以保护主系统免受潜在危害
+    -  模块化：将代理规划和工具执行的角色分开，可以使代码更易于管理，更容易调试，并且具有可扩展性。
 
-  `function calling`:
-    +  结构化：function calling 清晰且严谨的格式，最大限度地减少误解和潜在错误。
-    +  统一化：将任务规划，工具执行，全部转化 function calling 形式，确保以一致的方式处理每个任务。
-    +  无缝化：标准化与外部工具交互，具有使用和整合外部工具的能力。
+`function calling` :
+    -  结构化：function calling 清晰且严谨的格式，最大限度地减少误解和潜在错误。
+    -  统一化：将任务规划，工具执行，全部转化 function calling 形式，确保以一致的方式处理每个任务。
+    -  无缝化：标准化与外部工具交互，具有使用和整合外部工具的能力。
 
-  `AskHumanForHelp`: 
+`AskHumanForHelp` : 
   自主与用户进行交互，允许用户主动干预和指导其决策过程。该工具向用户征求实时反馈、建议或指导，将机器自主性与人类智慧相结合。
 
 ------
+
 #### Model scope-agent      
 
   ![](./assets/images_agent/modelscope_agent.png)
@@ -344,16 +431,17 @@
   + 多样化且全面的API
     多样工具的支持与自定义：默认提供了数十种多样化的模型 API 和常用 API。该库支持注册新的自定义 API，并支持从工具集中自动检索 API。
 
-+ **Dataset**： 
+* **Dataset**： 
 
-  （MSAgent-Bench：利用ChatGPT合成数据和现有的指令跟踪数据集）[Multilingual,  Various API Categories,  Multi Turn Dialog, API-Oriented QA, API-Agnostic Instructions ]
+  （MSAgent-Bench：利用ChatGPT合成数据和现有的指令跟踪数据集）[Multilingual, Various API Categories, Multi Turn Dialog, API-Oriented QA, API-Agnostic Instructions ]
+
     ![](./assets/images_agent/modelscope_data.png)
                                     
 
-+ **Model Training**:
+* **Model Training**:
     加权语言模型：工具学习样本更侧重于工具选择和 API 参数预测的准确性。它增强了 API 名称和参数生成的训练，同时将用户提示和工具执行部分的损失置为零。
 
-+ **Evaluation:**
+* **Evaluation:**
 
   **动作完全匹配得分（Action Exactly Match Score）**：衡量智能体是否使用了与参考标准 API 相同的正确 API。
 
@@ -365,16 +453,17 @@
 
   P = (0.5 × # HM + # FM)/ |A∗|(the number of arguments in the agents API request)
 
-<img src="./assets/images_agent/modelscope_wightLM.png" alt="image-20231218174953167" style="zoom: 200%;" />
+<img src="./assets/images_agent/modelscope_wightLM.png" alt="image-20231218174953167" style="zoom: 200%; " />
 
-+ **Human Evaluation with Agent Arena**
+* **Human Evaluation with Agent Arena**
     我们构建了一个可访问的 Agent Arena，允许用户根据提供的 API 向两个匿名智能体提供指令。
     ![](./assets/images_agent/modelscope_result.png)
 
-+ **Potential Misuse：**
+* **Potential Misuse：**
   尽管如此，自定义模型仍可能生成一些带有偏见、虚假或不安全的信息。因此，未来设计具体方法以提升智能体框架的安全性同样重要。
 
 ------
+
 ####  Hugging GPT
 
    + ***Task Planning:*** 使用 ChatGPT 分析用户请求以理解其意图，并通过提示将其分解为可能的可解决任务。
@@ -408,17 +497,17 @@
 
 **Collaboration Layer**
 
-+ ***Role Definitions***：角色定义不仅引入了基于预期功能的行为指导，而且有助于创建多样化和专业化的智能体，每个智能体都是其领域的专家。
+* ***Role Definitions***：角色定义不仅引入了基于预期功能的行为指导，而且有助于创建多样化和专业化的智能体，每个智能体都是其领域的专家。
   + Profile: 体现了角色或职位的领域专业知识。
   + Goal:  表示角色寻求完成的主要责任或目标。
   + Constraints: 表示角色在执行行动时必须遵循的限制或原则。
   + Description：提供额外的具体身份，以帮助建立更全面的角色。
 
-+  ***Think & Reflect***： 角色可以检索角色描述来构建思维，然后反思需要做什么并决定下一步行动。`via _think()`
-+ ***Observe:***   角色可以使用 `_observe（）`函数观察环境并根据观察结果进行思考/行动。它们会关注重要信息，并将其纳入记忆中，以丰富其上下文理解并为未来的决策提供信息。
-+ ***Broadcast messages:***   角色可以使用 `_publish_message（）`函数将消息广播到环境中。这些消息包含有关当前执行结果和相关行动记录的详细信息，用于发布和共享信息。
-+ ***Knowledge precipitation & Act:***  角色不仅是广播者，也是环境信息的接收者。角色可以评估传入的消息的相关性和及时性，从共享环境中提取相关知识，并维护一个内部的知识库以支持决策。它们通过咨询LLM，并利用其具有丰富上下文信息和自我知识的来执行行动。执行结果被封装为消息，而规范性组件则由环境共享。
-+ ***State management:***   角色可以通过更新工作状态和监控待办事项列表来跟踪它们的行动。这使得角色能够按顺序处理多个行动而不中断。在执行每个行动时，角色首先锁定其状态。完成行动后，将状态标记为解锁。这样可以防止其他行动中断工作流程。
+*  ***Think & Reflect***： 角色可以检索角色描述来构建思维，然后反思需要做什么并决定下一步行动。`via _think()`
+* ***Observe:***   角色可以使用 `_observe（）`函数观察环境并根据观察结果进行思考/行动。它们会关注重要信息，并将其纳入记忆中，以丰富其上下文理解并为未来的决策提供信息。
+* ***Broadcast messages:***   角色可以使用 `_publish_message（）`函数将消息广播到环境中。这些消息包含有关当前执行结果和相关行动记录的详细信息，用于发布和共享信息。
+* ***Knowledge precipitation & Act:***  角色不仅是广播者，也是环境信息的接收者。角色可以评估传入的消息的相关性和及时性，从共享环境中提取相关知识，并维护一个内部的知识库以支持决策。它们通过咨询LLM，并利用其具有丰富上下文信息和自我知识的来执行行动。执行结果被封装为消息，而规范性组件则由环境共享。
+* ***State management:***   角色可以通过更新工作状态和监控待办事项列表来跟踪它们的行动。这使得角色能够按顺序处理多个行动而不中断。在执行每个行动时，角色首先锁定其状态。完成行动后，将状态标记为解锁。这样可以防止其他行动中断工作流程。
 
 **实例化SOP的Prompt**          
 
@@ -434,12 +523,12 @@
 
 **知识共享机制和自定义知识管理**
 
-- **消息共享**：当一个智能体生成一条消息时，它会被复制到共享的环境日志中，创建一个真实的单一数据源。从而确保所有智能体都可以获取相同的信息。
--  **基于角色的订阅**：智能体可以根据其角色对其有意义的消息类型进行注册订阅。其根据与智能体的责任和任务相一致的预定义标准进行的。
--  **消息分发**：当有新的消息符合订阅条件时，它会自动分发通知给相关的智能体。这种主动传播信息的方式可以防止智能体错过重要的更新。
--  **内存缓存和索引**：智能体会维护一个内部的记忆缓存，其中订阅的消息会被存储并按内容、发送者和接收者建立索引。从而保障高效的信息存储和检索。
--  **上下文检索**：环境会维护一个支持缓存和索引的共享内存池。与此同时，智能体可以根据需要查询其内部内存，以获取与其当前任务相关的上下文细节。这有助于改进其理解并做出更好的决策。
--  **更新同步**：对消息进行的任何更新或更改都会在所有链接的智能体内存中同步，以保持信息的一致视图。这确保所有智能体都可以访问最新的数据。
+* **消息共享**：当一个智能体生成一条消息时，它会被复制到共享的环境日志中，创建一个真实的单一数据源。从而确保所有智能体都可以获取相同的信息。
+*  **基于角色的订阅**：智能体可以根据其角色对其有意义的消息类型进行注册订阅。其根据与智能体的责任和任务相一致的预定义标准进行的。
+*  **消息分发**：当有新的消息符合订阅条件时，它会自动分发通知给相关的智能体。这种主动传播信息的方式可以防止智能体错过重要的更新。
+*  **内存缓存和索引**：智能体会维护一个内部的记忆缓存，其中订阅的消息会被存储并按内容、发送者和接收者建立索引。从而保障高效的信息存储和检索。
+*  **上下文检索**：环境会维护一个支持缓存和索引的共享内存池。与此同时，智能体可以根据需要查询其内部内存，以获取与其当前任务相关的上下文细节。这有助于改进其理解并做出更好的决策。
+*  **更新同步**：对消息进行的任何更新或更改都会在所有链接的智能体内存中同步，以保持信息的一致视图。这确保所有智能体都可以访问最新的数据。
 
 ------
 
@@ -447,9 +536,9 @@
 
 基于 **SOP（Standard Operating Procedure）**的思路，通过配置文件指定包含哪些阶段，以及每个阶段包含哪些角色，角色的配置等。
 
-+  `states`：SOP 过程中包含的各个阶段。
+*  `states`：SOP 过程中包含的各个阶段。
 
-+ ###### `relations`：定义了各个阶段的后续阶段是哪个阶段。
+* ###### `relations`：定义了各个阶段的后续阶段是哪个阶段。
 
 ```python
 "relations": {
@@ -469,6 +558,7 @@
 ```
 
 ------
+
 #### **ChatDev**
 
  **ChatDev** 的思路借鉴自**瀑布模型（waterfall model）**，将开发过程分为四个明确的时间顺序阶段：**设计（designing）、编码（coding）、测试（testing）和文档编制（documenting）**。每个阶段都会涉及到一组代理人，例如程序员、代码审查者和测试工程师，以促进合作对话并促进流畅的工作流程。**聊天链（Chat Chain）**充当了一个促进者的角色，将每个阶段细分为原子子任务。
@@ -487,9 +577,11 @@
 
 #### 工具调用
 
-+ 外部`API`说明
+* 外部`API`说明
 
-  ```python
+  
+
+```python
   # 脚本文件名：必须准确该出api的名字信息，eg:safe_detech.py   api.py
   # 代码格式 格式如下：
   class your_api_name: #api的名字，首字母大写
@@ -512,10 +604,13 @@
          """       
   
   ```
+
   
   **格式：**
   
-  ```python
+  
+
+```python
     # 工具注册的模板  
           {
           'name_for_human':
@@ -534,4 +629,3 @@
               ],
           }, 
   ```
-

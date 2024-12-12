@@ -1,13 +1,10 @@
-### **量化技术一网打尽**
+### 量化技术一网打尽
 
-+ #### **GPTQ**
+* #### **GPTQ**
 
   思想：**逐层量化，对层内所有参数逐个量化，每个参数量化后，需要适当调整层内其他未量化的参数，以弥补量化造成的精度损失。**
-
-  首先先补充下`gptq` 的基础知识，附带详细数学推导。
-
+  首先先补充下 `gptq` 的基础知识，附带详细数学推导。
   + ##### **基础1：`OBD`**
-
     原理：利用二阶导数信息度量模型参数的显著性，也就是度量删除模型某个参数对结果的影响，剪掉影响小的参数降低模型复杂度提高泛化能力。
 
     理论基石：损失函数泰勒级数展开
@@ -29,7 +26,6 @@
     - 假设目标函数是二阶的，所以我们不考虑高阶项 $ O(||\Delta w||^3)$
     - 假设模型训练已充分收敛，因此所有参数的一阶偏导均为 0： $𝑔_𝑖=0,∀𝑖$
     - 假设删除任意一个参数后，其他参数对目标函数的影响不变。也就是说，每个参数对目标函数的影响是独立的。不考虑交叉项： $ℎ_{𝑖𝑗}=0,∀𝑖,𝑗,𝑖≠𝑗$
-
     最终优化目标：
     $$
     \Delta E = \frac{1}{2}\sum_ih_{ii}\Delta w^2_i
@@ -37,8 +33,8 @@
     根据 $\Delta E$ 的变化，从小到大给参数排个序，这样就确定了参数剪枝的次序。
 
   + ##### **基础2：`OBS`**
+`OBS` 认为，参数之间的独立性不成立，要考虑交叉项. 思想就是寻找对模型影响最小的参数并置零，然后更新模型参数补偿置零参数带来的影响。
 
-    `OBS` 认为，参数之间的独立性不成立，要考虑交叉项. 思想就是寻找对模型影响最小的参数并置零，然后更新模型参数补偿置零参数带来的影响。
     $$
     \Delta E =  \frac{1}{2}\Delta w^T H\Delta w
     $$
@@ -70,7 +66,6 @@
     然后就可以按照影响从小到大给参数排个序，这样就确定了参数剪枝的次序。同时，每次剪枝一个参数，其他的参数也按照 $𝛥𝑤$ 更新一次。
 
   + ##### **基础3：OBC**
-
     提出假设：参数矩阵的同一行参数互相之间是相关的，而不同行之间的参数互不相关。减少计算海森逆计算难度。
 
     
@@ -82,45 +77,40 @@
     \Delta w = -\frac{w_q-quant(w_q)}{[-H^{-1}]_{qq}} H^{-1}_{,:q} \\
     \Delta E = \frac{1}{2} \frac{(w_q-quant(w_q))^2}{[H^{-1}]_{qq}}
     $$
-    基于此，`gptq`主要创新在于：
+    基于此， `gptq` 主要创新在于：
 
-    +  OBS 采用贪心策略，先量化对目标影响最小的参数；但 GPTQ 发现直接按顺序做参数量化，对精度影响也不大。**参数矩阵每一行的量化可以做并行的矩阵计算**，时间复杂度由$O(d_{row}.d_{col}^3)$ 降低至 $O(max(d_{row}.d_{col}^2 , d_{col}^3))$
+    -  OBS 采用贪心策略，先量化对目标影响最小的参数；但 GPTQ 发现直接按顺序做参数量化，对精度影响也不大。**参数矩阵每一行的量化可以做并行的矩阵计算**，时间复杂度由$O(d_{row}.d_{col}^3)$ 降低至 $O(max(d_{row}.d_{col}^2 , d_{col}^3))$
 
-    + **Lazy Batch-Updates**，延迟一部分参数的更新，它能够缓解 bandwidth 的压力；
-
+    - **Lazy Batch-Updates**，延迟一部分参数的更新，它能够缓解 bandwidth 的压力；
       即：将参数矩阵按每 128 列划分为一个个 group，量化某一列时，group 内的参数立即更新，而 group 后面的列只记录更新量，延迟更新。当一个  group 的参数全部量化完成，再统一对后面的所有参数做一次更新。这就是 Lazy Batch-Updates。
 
-    + **Cholesky Reformulation**，用 Cholesky 分解求海森矩阵的逆，在增强数值稳定性的同时，不再需要对海森矩阵做更新计算。
-
+    - **Cholesky Reformulation**，用 Cholesky 分解求海森矩阵的逆，在增强数值稳定性的同时，不再需要对海森矩阵做更新计算。
     算法流程图如下：
 
     **Quantize $W$ given inverse Hessian $H^{−1} = (2XX^T + \lambda I)^{-1}$ and blocksize $B$.**
 
-    $Q ← O_{d_{row}× d_{col}}$                                                                            // quantized output
-
-    $E ← O_{d_{row} × B}$                                                                               // block quantization errors
-
-    $H^{−1} ← Cholesky(H^{−1})^T $                                                        // Hessian inverse information
-
-    $ for    \  i = 0, B, 2B, . . . do $
-
-    ​        $for \ j = i, . . . , i + B − 1 \ do$
-
-    ​               $Q_{:,j} ← quant(W_{:,j} )$                                                      // quantize column
-
-    ​               $E_{:,j−i} ← (W_{:,j} − Q_{:,j} ) / [H^{−1}]_{jj}$                                  // quantization error
-
-    ​              $W_{:,j:(i+B) }← W_{:,j:(i+B) }− E_{:,j−i} · H^{−1}_{j,j:(i+B)} $                // update weights in block
-
-    ​        $end \ for$
-
-    $W_{:,(i+B):} ← W_{:,(i+B):} − E · H^{−1}_{i:(i+B),(i+B):}$                                // update all remaining weights$
-
+    $Q ← O_{d_{row}× d_{col}}$                                                         // quantized output
+    $E ← O_{d_{row} × B}$                                                              // block quantization errors
+    $H^{−1} ← Cholesky(H^{−1})^T $                                                     // Hessian inverse information
+    $for  \  i = 0, B, 2B, . . . do$
+    ​     $for \ j = i, . . . , i + B − 1 \ do$
+    ​           $Q_{:,j} ← quant(W_{:,j} )$                                        // quantize column
+    ​           $E_{:,j−i} ← (W_{:,j} − Q_{:,j} ) / [H^{−1}]_{jj}$                 // quantization error
+    ​           $W_{:,j:(i+B) }← W_{:,j:(i+B) }− E_{:,j−i} · H^{−1}_{j,j:(i+B)}$   // update weights in block
+    ​     $end \ for$
+    $W_{:,(i+B):} ← W_{:,(i+B):} − E · H^{−1}_{i:(i+B),(i+B):}$                   // update all remaining weights$
     $end \ for$
 
-    `autogptq` 库主要代码实现
+`autogptq` 库主要代码实现
 
-    ```python
+    将剪枝操作转换量化版本, 修改如下。
+    $$
+    \Delta w = -\frac{w_q-quant(w_q)}{[-H^{-1}]_{qq}} H^{-1}_{,:q} \\
+    \Delta E = \frac{1}{2} \frac{(w_q-quant(w_q))^2}{[H^{-1}]_{qq}}
+    $$
+    基于此， `gptq` 主要创新在于：
+
+```python
     class GPTQ:
         # 求解 H 矩阵
         def add_batch(self,inp，out):
@@ -186,12 +176,10 @@
                 """
                 Q[:, i1:i2] = Q1
                 Losses[:, i1:i2] = Losses1 / 2
-                W[:, i2:] -= Err1.matmul(Hinv[i1:i2, i2:])
-                
-            
+                W[:, i2:] -= Err1.matmul(Hinv[i1:i2, i2:])     
     ```
 
-+ #### AWQ:  Activation-aware Weight Quantization
+* #### AWQ:  Activation-aware Weight Quantization
 
   + 背景：先指出`gptq` 的缺点：它使用二阶信息来进行误差补偿，但它可能在重建过程中过拟合校准集，从而扭曲分布之外领域上的学习特征。
   + 核心思想：权重对于LLM的性能并不同等重要”的观察，存在约（0.1%-1%）显著权重对大模型性能影响太大，通过跳过这1%的显著权重（salient weight）不进行量化，可以大大减少量化误差。即：**通过保护更“重要”的权重不进行量化，从而在不进行训练的情况下提高准确率。**
@@ -200,7 +188,9 @@
 
   作者核心原话：
 
-  ```latex
+  
+
+```latex
   1. We observe that we can find 1% of the salient weights in LLMs by observing the activation distribution.
   2. Keeping the salient weights in FP16 can significantly improve the quantized performance (PPl from
             43.2 (left) to 13.0 (middle)), but the mixed-precision format is not hardware-efficient. 
@@ -209,11 +199,9 @@
   ```
 
   + **实验1：**通过保留1%的显著权重来改进LLM量化
-
     **结论：** 发现跳过具有较大 Norm（基于 $W$）的权重通道并不能显著提高量化性能，与随机选择效果类似仅少量改进。而根据激活幅度（magnitude）选     择权重可以显著提高性能，通过只保留 0.1%-1% 的较大激活所对应权重通道就能显著提高量化性能。
 
   + **实验2：**通过激活感知缩放保护显著权重。
-
     先看量化公式：N 是量化比特数， $\Delta$  是量化缩放比例。
     $$
     Y = Q(W)X \\
@@ -228,7 +216,14 @@
 
     举例分析：
 
-    ```python
+    将剪枝操作转换量化版本, 修改如下。
+    $$
+    \Delta w = -\frac{w_q-quant(w_q)}{[-H^{-1}]_{qq}} H^{-1}_{,:q} \\
+    \Delta E = \frac{1}{2} \frac{(w_q-quant(w_q))^2}{[H^{-1}]_{qq}}
+    $$
+    基于此， `gptq` 主要创新在于：
+
+```python
      #假设权重w 满足标准正态分布
     W = [-0.5,0.25,0.56,0.78,0.94]
     N = 3
@@ -237,26 +232,52 @@
     delta = delta / bit
     ```
 
-    ```python
+    将剪枝操作转换量化版本, 修改如下。
+    $$
+    \Delta w = -\frac{w_q-quant(w_q)}{[-H^{-1}]_{qq}} H^{-1}_{,:q} \\
+    \Delta E = \frac{1}{2} \frac{(w_q-quant(w_q))^2}{[H^{-1}]_{qq}}
+    $$
+    基于此， `gptq` 主要创新在于：
+
+```python
     "执行结果"
     delta = 0.235
     ```
 
-    ```python
+    将剪枝操作转换量化版本, 修改如下。
+    $$
+    \Delta w = -\frac{w_q-quant(w_q)}{[-H^{-1}]_{qq}} H^{-1}_{,:q} \\
+    \Delta E = \frac{1}{2} \frac{(w_q-quant(w_q))^2}{[H^{-1}]_{qq}}
+    $$
+    基于此， `gptq` 主要创新在于：
+
+```python
     quantization = [round(w/delta) for w in W]
     de_quantization = [delta * q  for q in quantization] 
     ```
 
-     
+    将剪枝操作转换量化版本, 修改如下。
+    $$
+    \Delta w = -\frac{w_q-quant(w_q)}{[-H^{-1}]_{qq}} H^{-1}_{,:q} \\
+    \Delta E = \frac{1}{2} \frac{(w_q-quant(w_q))^2}{[H^{-1}]_{qq}}
+    $$
+    基于此， `gptq` 主要创新在于：
 
-    ```python
+```python
     quantization = [-2, 1, 2, 3, 4]
     de_quantization = [-0.47, 0.235, 0.47, 0.705, 0.94]
     ```
 
     另 $s = 1.25 $  作用于 $W[2]$
 
-    ```python
+    将剪枝操作转换量化版本, 修改如下。
+    $$
+    \Delta w = -\frac{w_q-quant(w_q)}{[-H^{-1}]_{qq}} H^{-1}_{,:q} \\
+    \Delta E = \frac{1}{2} \frac{(w_q-quant(w_q))^2}{[H^{-1}]_{qq}}
+    $$
+    基于此， `gptq` 主要创新在于：
+
+```python
     
     W_s = [-0.5,0.25,0.56*1.25,0.78,0.94]
     delta_s = 0
@@ -277,7 +298,14 @@
     de_quantization_s[2] = de_quantization_s[2] / s
     ```
 
-    ```python
+    将剪枝操作转换量化版本, 修改如下。
+    $$
+    \Delta w = -\frac{w_q-quant(w_q)}{[-H^{-1}]_{qq}} H^{-1}_{,:q} \\
+    \Delta E = \frac{1}{2} \frac{(w_q-quant(w_q))^2}{[H^{-1}]_{qq}}
+    $$
+    基于此， `gptq` 主要创新在于：
+
+```python
     delta_s  = 0.235
     quantization_s = [-2, 1, 3, 3, 4]
     de_quantization_s = [-0.47, 0.235, 0.564, 0.705, 0.94]
@@ -285,18 +313,29 @@
 
     **结论：**
 
-    + 缩放单个元素 $w_{i} \in W$ 不会改变$W$ 的极值，即$\Delta^{'} \approx  \Delta $. 
+    - 缩放单个元素 $w_{i} \in W$ 不会改变$W$ 的极值，即$\Delta^{'} \approx  \Delta $. 
 
-    + $Round(·)$ (标记$RoundErr$)  不会发生改变，该误差服从均匀分布(0-0.5)，导致平均误差0.25 。
+    - $Round(·)$ (标记$RoundErr$)  不会发生改变，该误差服从均匀分布(0-0.5)，导致平均误差0.25 。
 
-    + 显著权重相对误差较小
+    - 显著权重相对误差较小
       $$
       E_{rr} = \Delta  · RoundErr \\
       E_{rr^{'}} = \Delta ^{'} · RoundErr · \frac{1}{s} \\ 
       \frac{E_{rr^{'}}}{E_{rr}}  = \frac{\Delta ^{'}}{ \Delta }·\frac{1}{s}
       $$
+      # 原始输出：
+      tensor([[  38,   34],
+              [-167,  124],
+              [-174,  168]])
+      # 先量化，后反量化得到结果
+      tensor([[  37.5079,   34.9763],
+              [-167.2381,   127.4646],
+              [-176.4921,   166.9764]])
 
-      ```python
+      
+
+```
+```python
       # 量化之前的
       W = [-0.5,0.25,0.56,0.78,0.94]
       # 量化后的
@@ -322,26 +361,33 @@
       $\alpha$ 是超参数，取值【0，1】，平衡显著权重和非显著权重的程度。
 
       **总结优点：**
+      由于不用反向传播训练的方法，将很少依赖校准集，预防过拟合。需要更少的量化过程数据，并且可以保留在校准集分布之外的知识。
 
-      ​        由于不用反向传播训练的方法，将很少依赖校准集，预防过拟合。需要更少的量化过程数据，并且可以保留在校准集分布之外的知识。
-
-+ #### **LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale**		
+* #### **LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale**		
 
   + **提出背景**：作者发现激活中存在一些离群值，它们的绝对值明显更大；并且这些离群值分布在少量的几个特征中，称为离群特征 (Emergent Features)。
-
     不论是 per-token（针对激活 x 而言：每行对应一个量化系数） 还是 per-channel （针对权重 w 而言：每列对应一个量化系数）量化，都会受到这些离群值的很大影响。既然只有少量的特征包含离群值，LLM.in8() 的思路是把这些特征拿出来单独计算，只对剩余特征做量化。
 
-    + **实现过程：**
-
+    - **实现过程：**
       流程如下：
 
       1. 从输入的隐含状态中，按列提取异常值 (离群特征，即大于某个阈值的值)。
       2. 对离群特征进行 FP16 矩阵运算，对非离群特征进行量化，做 INT8 矩阵运算；
       3. 反量化非离群值的矩阵乘结果，并与离群值矩阵乘结果相加，获得最终的 FP16 结果。
-
       ![](.\assets\PTQ\llm_int8.png)
+      # 原始输出：
+      tensor([[  38,   34],
+              [-167,  124],
+              [-174,  168]])
+      # 先量化，后反量化得到结果
+      tensor([[  37.5079,   34.9763],
+              [-167.2381,   127.4646],
+              [-176.4921,   166.9764]])
 
-      ```python
+      
+
+```
+```python
       import torch
       X = [[2,45,-1,-17,-1],[0,12,3,-63,2],[-1,37,-1,-83,0]]
       W = [[-1,0],[2,0],[0,-2],[3,-2],[-1,2]]
@@ -387,8 +433,19 @@
       ```
 
       实验结果：
+      # 原始输出：
+      tensor([[  38,   34],
+              [-167,  124],
+              [-174,  168]])
+      # 先量化，后反量化得到结果
+      tensor([[  37.5079,   34.9763],
+              [-167.2381,   127.4646],
+              [-176.4921,   166.9764]])
 
-      ```
+      
+
+```
+```
       # 原始输出：
       tensor([[  38,   34],
               [-167,  124],
@@ -400,18 +457,12 @@
       ```
 
       结论：量化前后几乎不变，量化损失基本很少，真TM牛逼。
-
       实践注意事项：$W$ $X$  这两个矩阵分块时，一定要注意分块后不能改变索引的次序。此外，$X$ 切出 $m$ 行，$W$ 要切出 $m$ 列。
 
       
 
    
 
-
-
 ​			
 
-
-
 ​					
-

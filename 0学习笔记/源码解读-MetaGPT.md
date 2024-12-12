@@ -1,12 +1,8 @@
-
-
-
-
 #                                 MetaGPT-DataInterpreter源码解读
 
 > MetaGPT 是一种多智能体框架，其利用SOP（Standard Operating Procedures）来协调多智能体系统。即：**多智能体=智能体+环境+标准流程（SOP）+通信+经济**
 
-**DataInterpreter ：简单三行代码，即可完成用户`requirement`任务**
+**DataInterpreter ：简单三行代码，即可完成用户 `requirement` 任务**
 
 ```python
 from metagpt.roles.di.data_interpreter import DataInterpreter
@@ -14,7 +10,7 @@ mi = DataInterpreter(use_reflection=True, tools=["<all>"])
 mi.run(requirement)
 ```
 
-### `machine_learning` 
+### `machine_learning`
 
 ```python
 from metagpt.roles.di.data_interpreter import DataInterpreter
@@ -28,9 +24,7 @@ classDiagram
     DataInterpreter <-- Role 
 ```
 
-
-
-#### `DataInterpreter` 
+#### `DataInterpreter`
 
 ```python
 mi = DataInterpreter() # 实例化方法
@@ -68,45 +62,49 @@ tool_recommender=None, react_mode='plan_and_act', max_react_loop=1
 )
 ```
 
-上述展示 `DataInterpreter` 组成，首先补充下`pydantic` 基础知识点：
+上述展示 `DataInterpreter` 组成，首先补充下 `pydantic` 基础知识点：
 
 **@model_validator(mode="wrap")**：
 
-- 验证器方法需要接受两个参数：`cls`（类本身）和 `value`（要验证的值）
-- 可以在自定义逻辑中决定是否调用默认的 `handler` 方法来继续验证过程
-- 允许在默认验证之前和之后执行自定义逻辑
+* 验证器方法需要接受两个参数：`cls`（类本身）和 `value`（要验证的值）
+* 可以在自定义逻辑中决定是否调用默认的 `handler` 方法来继续验证过程
+* 允许在默认验证之前和之后执行自定义逻辑
 
 **@model_validator(mode="after")：**
 
-- 验证器方法只需要接受一个参数：`value`（已经通过默认验证的值）
-- 验证器方法通常以 `self` 作为第一个参数，表示模型实例本身
-- 这种模式下的验证器会在 Pydantic 的默认字段验证逻辑之后执行。
+* 验证器方法只需要接受一个参数：`value`（已经通过默认验证的值）
+* 验证器方法通常以 `self` 作为第一个参数，表示模型实例本身
+* 这种模式下的验证器会在 Pydantic 的默认字段验证逻辑之后执行。
 
 **@model_validator(mode="before")**：
 
-- 这种模式下的验证器会在 Pydantic 的默认字段验证逻辑之前执行
-- 验证器方法通常以 `cls` 作为第一个参数，表示模型类本身
-- 这种模式适用于类方法，因为它们在类级别上操作，可以在创建实例之前对类进行操作
+* 这种模式下的验证器会在 Pydantic 的默认字段验证逻辑之前执行
+* 验证器方法通常以 `cls` 作为第一个参数，表示模型类本身
+* 这种模式适用于类方法，因为它们在类级别上操作，可以在创建实例之前对类进行操作
 
-- [x] 要点1：**`SerializationMixin(BaseModel, extra="forbid")`** 
+* [x] 要点1：**`SerializationMixin(BaseModel, extra="forbid")`** 
 
-  ```python
+  
+
+```python
       @model_validator(mode="wrap")
       @classmethod
       def __convert_to_real_type__(cls, value: Any, handler):
           # ... 方法实现 ...
   ```
 
-  - `@model_validator(mode="wrap")` 装饰器用于自定义 Pydantic 模型的验证和设置过程。
-  - 这个类方法用于在反序列化过程中将字典转换回正确的子类实例。
-  - 如果输入值不是一个字典，或者不包含 `__module_class_name` 字段，它会使用默认的处理程序来处理值。
-  - 如果 `__module_class_name` 存在，它会查找这个名称对应的类类型，并使用这个类来实例化对象。
+  + `@model_validator(mode="wrap")` 装饰器用于自定义 Pydantic 模型的验证和设置过程。
+  + 这个类方法用于在反序列化过程中将字典转换回正确的子类实例。
+  + 如果输入值不是一个字典，或者不包含 `__module_class_name` 字段，它会使用默认的处理程序来处理值。
+  + 如果 `__module_class_name` 存在，它会查找这个名称对应的类类型，并使用这个类来实例化对象。
 
   **不是很理解：**这段代码通过自定义序列化和反序列化过程，实现了对多态类的支持。在序列化时，它会将类类型信息添加到输出中；在反序列化时，它使用这些信息来创建正确的子类实例；
 
-- [x] 要点2：**`DataInterpreter(Role)`** 
+* [x] 要点2：**`DataInterpreter(Role)`** 
 
-  ```python
+  
+
+```python
   class DataInterpreter(Role):
       name: str = "David"
       profile: str = "DataInterpreter"
@@ -132,15 +130,19 @@ tool_recommender=None, react_mode='plan_and_act', max_react_loop=1
           return self
   ```
 
-  如果采用`plan_and_act` 模式，引入规划器`planner`
+  如果采用 `plan_and_act` 模式，引入规划器 `planner`
 
-  ```
+  
+
+```
   self.planner = Planner(goal=self.goal, working_memory=self.rc.working_memory, auto_run=auto_run)
   ```
 
-  `Planner`  : 3 个字段分别是 `plan`、`working_memory`、`auto_run`
+`Planner` : 3 个字段分别是 `plan` 、 `working_memory` 、 `auto_run`
 
-  ```
+  
+
+```
   class Planner(BaseModel):
       plan: Plan
       working_memory: Memory = Field(
@@ -153,9 +155,11 @@ tool_recommender=None, react_mode='plan_and_act', max_react_loop=1
           super().__init__(plan=plan, **kwargs)
   ```
 
-  `plan` 字段也是个类实例，具有的字段如下：
+`plan` 字段也是个类实例，具有的字段如下：
 
-  ```
+  
+
+```
   class Plan(BaseModel):
       goal: str
       context: str = ""
@@ -166,7 +170,9 @@ tool_recommender=None, react_mode='plan_and_act', max_react_loop=1
 
   在 `Role` 类 `set_actions` 中有段代码如下：
 
-  ```python
+  
+
+```python
   for action in actions:
               if not isinstance(action, Action):
                   i = action(context=self.context)
@@ -175,11 +181,13 @@ tool_recommender=None, react_mode='plan_and_act', max_react_loop=1
               self._init_action(i)
   ```
 
-  `self.context` 是 `ContextMixin` 类中一个方法，返回是 `Context()` 对象实例；
+`self.context` 是 `ContextMixin` 类中一个方法，返回是 `Context()` 对象实例；
 
-- [x] 要点3：**`Action(SerializationMixin, ContextMixin, BaseModel)`** 
+* [x] 要点3：**`Action(SerializationMixin, ContextMixin, BaseModel)`** 
 
-  ```python
+  
+
+```python
   class Action(SerializationMixin, ContextMixin, BaseModel):
       model_config = ConfigDict(arbitrary_types_allowed=True)
   
@@ -193,7 +201,9 @@ tool_recommender=None, react_mode='plan_and_act', max_react_loop=1
 
   **字段验证：**先执行 `Action` 里字段验证，**mode="before"** 字段从后向前验证；
 
-  ```python
+  
+
+```python
       @model_validator(mode="before")
       @classmethod
       def set_name_if_empty(cls, values):
@@ -212,11 +222,13 @@ tool_recommender=None, react_mode='plan_and_act', max_react_loop=1
   
   ```
 
-  这里验证`values` 值到底是什么？其实校验就是上述的 `self.context` 
+  这里验证 `values` 值到底是什么？其实校验就是上述的 `self.context`
 
   **字段验证：**后执行 `ContextMixin` 里字段验证，**mode="after"** 字段从前向后验证；
 
-  ```python
+  
+
+```python
       @model_validator(mode="after")
       def validate_context_mixin_extra(self):
           self._process_context_mixin_extra()
@@ -236,31 +248,37 @@ tool_recommender=None, react_mode='plan_and_act', max_react_loop=1
   
   ```
 
-  打印下 `self.__dict__` 
-
-  ```python
-  {'private_context': Context(kwargs=AttrD...': 0.0}})), 'private_config': None, 'private_llm': None, 'name': 'WriteAnalysisCode', 'i_context': '', 'prefix': '', 'desc': '', 'node': None}
-  ```
-
-  `_init_action` 中 追加 `Action` 字段的 `private_llm`、`prefix` 
+  打印下 `self.__dict__`
 
   
 
-### **`run 方法`:**
+```python
+  {'private_context': Context(kwargs=AttrD...': 0.0}})), 'private_config': None, 'private_llm': None, 'name': 'WriteAnalysisCode', 'i_context': '', 'prefix': '', 'desc': '', 'node': None}
+  ```
+
+`_init_action` 中 追加 `Action` 字段的 `private_llm` 、 `prefix`
+
+  
+
+### ** `run 方法` :**
 
 ```python
 mi.run(requirement)
 ```
 
-+ [x] **要点1：`run` 函数使用异步编程并被`role_raise_decorator` 装饰(用于处理在异步函数执行过程中可能出现的异常)；**
+* [x] **要点1：`run` 函数使用异步编程并被`role_raise_decorator` 装饰(用于处理在异步函数执行过程中可能出现的异常)；**
 
-  ```python
+  
+
+```python
   @role_raise_decorator
   async def run(self, with_message=None) -> Message | None:
          """Observe, and think and act based on the results of the observation"""
   ```
 
-  ```python
+  
+
+```python
   def role_raise_decorator(func):
       async def wrapper(self, *args, **kwargs):
           try:
@@ -296,9 +314,11 @@ mi.run(requirement)
   2. 如果在执行`func`时捕获到`KeyboardInterrupt`异常（通常由用户按Ctrl+C触发），代码将记录一个错误日志，并删除角色的最新观察消息`self.latest_observed_msg`，然后重新抛出一个异常。调用的是`traceback.format_exc(limit=limit)`，这是一个用于获取当前异常的堆栈跟踪信息的函数。
   3. 如果异常是`RetryError`，它将检查最后的错误类型，如果错误与`openai`或`httpx`相关，则抛出这个最后的错误。如果异常不是`RetryError`或者最后的错误与`openai`或`httpx`无关，代码将重新抛出一个异常，并包含完整的堆栈跟踪信息。
 
-+ [x] **要点2：`Message` 解读：**
+* [x] **要点2：`Message` 解读：**
 
-  ```python
+  
+
+```python
   class Message(BaseModel):
       """list[<role>: <content>]"""
   
@@ -311,11 +331,13 @@ mi.run(requirement)
       send_to: set[str] = Field(default={MESSAGE_ROUTE_TO_ALL}, validate_default=True)
   ```
 
-  **`Message` 类具有多个字段，包括 `id`、`content`、`instruct_content`、`role`、`cause_by`、`sent_from` 和 `send_to`， 使用 Pydantic 的功能来提供类型注解和验证。**
+  ** `Message` 类具有多个字段，包括 `id` 、 `content` 、 `instruct_content` 、 `role` 、 `cause_by` 、 `sent_from` 和 `send_to` ， 使用 Pydantic 的功能来提供类型注解和验证。**
 
-  **`Field(default=None, validate_default=True)`: 默认值为 `None`，并且即使它是默认值，也会进行验证。**
+  ** `Field(default=None, validate_default=True)` : 默认值为 `None` ，并且即使它是默认值，也会进行验证。**
 
-  ```python
+  
+
+```python
       def __init__(self, content: str = "", **data: Any):
           data["content"] = data.get("content", content)
           super().__init__(**data)
@@ -323,7 +345,9 @@ mi.run(requirement)
 
   **一旦基类初始化完成，Pydantic 会根据 `@field_validator` 装饰器指定的顺序执行校验函数。**
 
-  ```python
+  
+
+```python
    @field_validator("id", mode="before")
    @classmethod
    def check_id(cls, id: str) -> str:
@@ -336,7 +360,9 @@ mi.run(requirement)
 
   **在 `mode="before"` 的情况下，这些校验函数会在字段值被最终赋值给实例属性之前执行，这样可以确保所有的校验逻辑都在属性被设置之前完成。**
 
-  ```python
+  
+
+```python
   user: Run data analysis on sklearn Wine recognition dataset, include a plot, and train a model to predict wine class (20% as validation), and show validation accuracy.
   cause_by:  'metagpt.actions.add_requirement.UserRequirement'
   content:
@@ -348,9 +374,11 @@ mi.run(requirement)
   sent_from: ''
   ```
 
-+ [x] **要点3：`RoleContext` 解读：**
+* [x] **要点3：`RoleContext` 解读：**
 
-  ```python
+  
+
+```python
   class RoleContext(BaseModel):
       """Role Runtime Context"""
       model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -377,16 +405,20 @@ mi.run(requirement)
 
   2. `exclude=True` 参数是 `Field` 装饰器的一个选项，用于控制模型序列化时的行为。当一个字段被标记为 `exclude=True` 时，它在默认情况下不会出现在模型的 JSON 序列化结果中。这可以用于隐藏敏感信息或不需要传输的字段。例如：
 
-     ```python
+     
+
+```python
      rc = RoleContext()
      print(rc.json) # 设置 exclude 参数的字段不会被序列化
      ```
 
   3. `arbitrary_types_allowed=True` 是 `model_config` 中的一个配置选项，它允许模型中使用任意类型的对象作为属性值。设置 `arbitrary_types_allowed=True`，那么 Pydantic 将不会对未知类型的对象进行校验，而是直接允许它们作为模型属性的值。
 
-  4. `msg_buffer`: 这是一个 `MessageQueue` 类型的字段，用于存储消息缓冲区;
+  4. `msg_buffer`: 这是一个 `MessageQueue` 类型的字段，用于存储消息缓冲区; 
 
-     ```python
+     
+
+```python
      class MessageQueue(BaseModel):
          """
          Message queue which supports asynchronous updates.
@@ -395,11 +427,13 @@ mi.run(requirement)
          _queue: Queue = PrivateAttr(default_factory=Queue)
      ```
 
-     该类提供多种方法：`push`、`pop`、`pop_all`、`dump`、`load`、`empty` 方法；
+     该类提供多种方法： `push` 、 `pop` 、 `pop_all` 、 `dump` 、 `load` 、 `empty` 方法；
 
   5. `memory: Memory = Field(default_factory=Memory)` 这是一个 `Memory` 类型的字段，用于存储角色的记忆。
 
-     ```python
+     
+
+```python
      class Memory(BaseModel):
          """
          The most basic memory: super-memory
@@ -409,27 +443,27 @@ mi.run(requirement)
          ignore_id: bool = False
      ```
 
-     - `storage: list[SerializeAsAny[Message]] = []` 这是一个列表类型的字段，用于存储 `Message` 类型的实例。`SerializeAsAny` 可能是一个自定义的类型转换器，它允许 `Message` 类型的实例在序列化时被转换为一个可序列化的形式。
+     - `storage: list[SerializeAsAny[Message]] = []` 这是一个列表类型的字段，用于存储 `Message` 类型的实例。 `SerializeAsAny` 可能是一个自定义的类型转换器，它允许 `Message` 类型的实例在序列化时被转换为一个可序列化的形式。
 
-     - `index: DefaultDict[str, list[SerializeAsAny[Message]]] = Field(default_factory=lambda: defaultdict(list))` 这是一个 `DefaultDict` 类型的字段，用于存储消息的索引。`DefaultDict` 是一个特殊的字典，当访问一个不存在的键时，它会自动创建一个默认值。在这个例子中，默认值是一个空列表。这个索引字典的键是字符串类型，值是一个 `SerializeAsAny[Message]` 类型的列表，用于存储与特定键相关联的消息。这个字段使用了 `Field` 装饰器，并且使用了一个 lambda 函数作为默认工厂，这个 lambda 函数返回一个空的 `DefaultDict`。
+     - `index: DefaultDict[str, list[SerializeAsAny[Message]]] = Field(default_factory=lambda: defaultdict(list))` 这是一个 `DefaultDict` 类型的字段，用于存储消息的索引。 `DefaultDict` 是一个特殊的字典，当访问一个不存在的键时，它会自动创建一个默认值。在这个例子中，默认值是一个空列表。这个索引字典的键是字符串类型，值是一个 `SerializeAsAny[Message]` 类型的列表，用于存储与特定键相关联的消息。这个字段使用了 `Field` 装饰器，并且使用了一个 lambda 函数作为默认工厂，这个 lambda 函数返回一个空的 `DefaultDict` 。
 
-     - `ignore_id: bool = False` 这是一个布尔类型的字段，用于表示是否忽略消息的 ID。默认值为 `False`，意味着消息的 ID 会被考虑在内
+     - `ignore_id: bool = False` 这是一个布尔类型的字段，用于表示是否忽略消息的 ID。默认值为 `False` ，意味着消息的 ID 会被考虑在内
 
-       该类提供多种方法：`add`、`add_batch`、`get_by_role`、`get_by_content`、`delete_newest`、`delete` 、 `clear`、`count`、`try_remember`、`get`、`find_news`、`get_by_action`   、`get_by_actions` 方法；
+       该类提供多种方法： `add` 、 `add_batch` 、 `get_by_role` 、 `get_by_content` 、 `delete_newest` 、 `delete` 、 `clear` 、 `count` 、 `try_remember` 、 `get` 、 `find_news` 、 `get_by_action` 、 `get_by_actions` 方法；
 
   6.  `default_factory` ：
-
      使用 `default_factory` 可以确保每次创建模型实例时，可选字段都会被赋予一个新创建的默认实例，而不是共享同一个实例。这对于可变数据类型（如列表、字典）尤其重要；
 
   7. `news: list[Type[Message]] = Field(default=[], exclude=True)` 这是一个 `Message` 类型的列表字段，用于存储角色的新消息；
-
-     从消息缓冲区 `msg_buffer`  拿到所有未处理的消息 `Message` , 后放置在特定 `Role`  的 `memory`  里， 根据规则过滤感兴趣的消息，放在`news` 里；（这些消息要么是由 `self.rc.watch` 中的某些内容导致的，要么是发送给 `self.name` 的。此外，这些消息不能在 `old_messages` 中找到，以避免重复处理）
+     从消息缓冲区 `msg_buffer` 拿到所有未处理的消息 `Message` , 后放置在特定 `Role` 的 `memory` 里， 根据规则过滤感兴趣的消息，放在 `news` 里；（这些消息要么是由 `self.rc.watch` 中的某些内容导致的，要么是发送给 `self.name` 的。此外，这些消息不能在 `old_messages` 中找到，以避免重复处理）
 
      
 
-+ [x] **要点4：`Role` 解读：**
+* [x] **要点4：`Role` 解读：**
 
-  ```python
+  
+
+```python
   class Role(SerializationMixin, ContextMixin, BaseModel):
       """Role/Agent"""
   
@@ -465,7 +499,9 @@ mi.run(requirement)
 
   实例化对字段进行后校验：
 
-  ```python
+  
+
+```python
       @model_validator(mode="after")
       def validate_role_extra(self):
           self._process_role_extra()
@@ -488,13 +524,15 @@ mi.run(requirement)
 
   
 
-+ [x] **要点5：`react` 方法解读：**
+* [x] **要点5：`react` 方法解读：**
 
-  该方法根据角色当前的回应模式选择执行不同的策略。如果反应模式是 `RoleReactMode.REACT` 或 `RoleReactMode.BY_ORDER`，则执行 `self._react()` 方法；如果是 `RoleReactMode.PLAN_AND_ACT`，则执行 `self._plan_and_act()` 方法。
+  该方法根据角色当前的回应模式选择执行不同的策略。如果反应模式是 `RoleReactMode.REACT` 或 `RoleReactMode.BY_ORDER` ，则执行 `self._react()` 方法；如果是 `RoleReactMode.PLAN_AND_ACT` ，则执行 `self._plan_and_act()` 方法。
 
   +  `self._plan_and_act()` ：**直观简洁，很容易理解**
 
-    ```python
+ `DataInterpreter`
+
+```python
         async def _plan_and_act(self) -> Message:
             """first plan, then execute an action sequence, i.e. _think (of a plan) -> _act -> _act -> ... Use llm to come up with the plan dynamically."""
     
@@ -520,11 +558,13 @@ mi.run(requirement)
             return rsp
     ```
 
-+ [x] **要点6：`llm` 大语言模型怎么调用：**
+* [x] **要点6：`llm` 大语言模型怎么调用：**
 
   + `_aask`  方法：
 
-    ```python
+ `DataInterpreter`
+
+```python
         async def _aask(self, prompt: str, system_msgs: Optional[list[str]] = None) -> str:
             """Append default prefix"""
             return await self.llm.aask(prompt, system_msgs)
@@ -532,7 +572,9 @@ mi.run(requirement)
 
     **实例化** `self.llm` :
 
-    ```python
+ `DataInterpreter`
+
+```python
         @property
         def llm(self) -> BaseLLM:
             """Role llm: if not existed, init from role.config"""
@@ -541,20 +583,24 @@ mi.run(requirement)
             return self.private_llm
     ```
 
-    `llm` **如何回应：**
+`llm` **如何回应：**
 
-    ```
+ `DataInterpreter`
+
+```
       async def _achat_completion_stream(self, messages: list[dict], timeout=USE_CONFIG_TIMEOUT) -> str:
             response: AsyncStream[ChatCompletionChunk] = await self.aclient.chat.completions.create(
                 **self._cons_kwargs(messages, timeout=self.get_timeout(timeout)), stream=True
             )
     ```
 
-    `self.aclient` 实例化通过 `self.aclient = AsyncOpenAI(**kwargs)` ,  `kwargs` 是 `{'api_key': 'sk-', 'base_url': 'http://10.9.xx.xx:8000/v1'}` 
+`self.aclient` 实例化通过 `self.aclient = AsyncOpenAI(**kwargs)` , `kwargs` 是 `{'api_key': 'sk-', 'base_url': 'http://10.9.xx.xx:8000/v1'}`
 
-    输入信息`self._cons_kwargs(messages, timeout=self.get_timeout(timeout))`  是
+    输入信息 `self._cons_kwargs(messages, timeout=self.get_timeout(timeout))` 是
 
-    ```python
+ `DataInterpreter`
+
+```python
     'messages':[{'role': 'system', 'content': 'As a data scientist,... function.'}, {'role': 'user', 'content': '\n# User Requirement\n... code\n```\n'}]
     
     'max_tokens':4096
@@ -578,40 +624,3 @@ mi.run(requirement)
   
 
    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
