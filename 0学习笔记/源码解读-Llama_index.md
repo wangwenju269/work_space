@@ -2,16 +2,12 @@
 
 1. **加载数据**
 
-   
-
-```python
+   ```python
    from llama_index.core import SimpleDirectoryReader
    documents = SimpleDirectoryReader(input_dir=input_dir, input_files=input_files).load_data()
    ```
 
-   
-
-```mermaid
+   ```mermaid
    flowchart LR
        subgraph document
        a[Document] --> id_
@@ -32,11 +28,9 @@
 
 2. **将文档解析为节点**
 
-   将 `Document` 对象解析为 `Node` 对象，节点表示源文档的“块” ， 还包含与其他节点和索引结构的元数据和关系信息。
+   将  `Document`  对象解析为 `Node`  对象，节点表示源文档的“块” ， 还包含与其他节点和索引结构的元数据和关系信息。
 
-   
-
-```python
+   ```python
    from llama_index.core.node_parser import SentenceSplitter
    transformations = [SentenceSplitter(chunk_size = 512)]
    
@@ -44,9 +38,7 @@
    nodes = run_transformations(documents, transformations=transformations)
    ```
 
-   
-
-```mermaid
+   ```mermaid
    flowchart LR
        SentenceSplitter -.subclass
        .-> MetadataAwareTextSplitter
@@ -60,9 +52,7 @@
 
    **chunk** 策略：先切分，后合并。优先保持句子的完整性、短语完整，并尽量减少重叠。
 
-   
-
-```python
+   ```python
    splits = self._split(text, chunk_size)
    chunks = self._merge(splits, chunk_size)
    ```
@@ -71,25 +61,21 @@
 
    1. 按段落分隔符分割
    2. 按块分词器分割（默认为nltk句子分词器）
-   3. 按第二个块正则表达式分割（默认为$[^, \.; ]+[, \.; ]?$ ）
+   3. 按第二个块正则表达式分割（默认为$[^,\.;]+[,\.;]?$ ）
    4. 按默认分隔符（" "）分割
 
-`split_by_sep` > `split_by_sentence_tokenizer` > `split_by_regex` > `split_by_sep` > `split_by_char`
+    `split_by_sep`    >      `split_by_sentence_tokenizer`   >  `split_by_regex`  >   `split_by_sep`  >  `split_by_char`
 
-   统计分词后 `token` 数量，是否超过 `chunk_size` ，若长句子分此后超过 `chunk_size` , 则递归式拆分；（ `tiktoken` 的 `bpe` ）
+   统计分词后 `token` 数量，是否超过 `chunk_size`   ，若长句子分此后超过 `chunk_size` ,则递归式拆分；（  `tiktoken` 的 `bpe`）
 
-   
-
-```python
+   ```python
    from tiktoken import _tiktoken
    self._core_bpe = _tiktoken.CoreBPE(mergeable_ranks, special_tokens, pat_str)
    ```
 
-`pat_str` ： 正则表达式模式的字符串，用于分割输入文本； `mergeable_ranks` ：如果一个文本处理函数需要在分割后合并某些标记，那么具有更高等级的标记将优先被合并。
+   `pat_str` ： 正则表达式模式的字符串，用于分割输入文本； `mergeable_ranks`：如果一个文本处理函数需要在分割后合并某些标记，那么具有更高等级的标记将优先被合并。
 
-   
-
-```mermaid
+   ```mermaid
    flowchart LR
        subgraph node
        a[TextNode] --> relationships
@@ -102,9 +88,7 @@
 
 3. **索引构建**
 
-   
-
-```python
+   ```python
    from llama_index.core import StorageContext, VectorStoreIndex
    index = VectorStoreIndex(
                nodes=nodes,
@@ -112,22 +96,18 @@
            )
    ```
 
-`LlamaIndex ` 支持 `HuggingFace` 嵌入模型，包括 BGE、Instructor 等, 使用参考如下：
+   `LlamaIndex `支持  `HuggingFace` 嵌入模型，包括 BGE、Instructor 等, 使用参考如下：
 
-   
-
-```python
+   ```python
    %pip install llama-index-embeddings-huggingface
    from llama_index.embeddings.huggingface import HuggingFaceEmbedding
    embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-small-en-v1.5")
    embeddings = embed_model.get_text_embedding("Hello World!")
    ```
 
-   支持多种 `Embedding` , 例如： `GeminiEmbedding` , `OllamaEmbedding` , `OpenAIEmbedding` ； 以 `OllamaEmbedding` 为例，使用教程参考如下：
+   支持多种`Embedding`, 例如：`GeminiEmbedding`, `OllamaEmbedding` ,  `OpenAIEmbedding` ； 以  `OllamaEmbedding` 为例，使用教程参考如下：
 
-   
-
-```python
+   ```python
    %pip install  llama-index-embeddings-ollama==0.1.2
    from llama_index.embeddings.ollama import OllamaEmbedding
    # kwangs = {'base_url': 'http://127.0.0.1:11434', 'model_name': 'qwen2'}  # ollama 必要参数
@@ -137,11 +117,9 @@
 
    接着介绍 `VectorStoreIndex `
 
-`VectorStoreIndex ` 不设置 `storage_context` 参数字段，会加载 默认的向量存储器 ` SimpleVectorStore` , 官方解释如下：
+   `VectorStoreIndex ` 不设置  `storage_context`  参数字段，会加载 默认的向量存储器` SimpleVectorStore`, 官方解释如下：
 
-   
-
-```python
+   ```python
    """
    Args:
       embedding_dict (Optional[dict]):    dict mapping node_ids to embeddings.
@@ -150,11 +128,9 @@
    """
    ```
 
-    若用户想用 `fiass` 向量检索库，只需要传入 `vector_store ` 对象, 参考如下：
+    若用户想用`fiass` 向量检索库，只需要传入`vector_store ` 对象, 参考如下：
 
-   
-
-```python
+   ```python
    from llama_index.vector_stores.faiss import FaissVectorStore
    import faiss
    from llama_index.core import StorageContext, VectorStoreIndex
@@ -172,18 +148,14 @@
 
    创建一个针对索引的问答引擎并提出一个简单的问题：
 
-   
-
-```python
+   ```python
    query_engine = index.as_query_engine(llm = llm)
    query_engine.query("how are you ?")
    ```
 
-   查看下 `index` 类型 是 `BaseIndex`
+   查看下 `index`  类型 是 `BaseIndex`
 
-   
-
-```python
+   ```python
    from llama_index.core.indices.base import BaseIndex
    isinstance(index , BaseIndex)
    ```
@@ -192,17 +164,13 @@
 
    使用默认的向量存储器：
 
-   
-
-```
+   ```
    retriever = index.as_retriever()
    ```
 
    或者使用：
 
-   
-
-```python
+   ```python
    from llama_index.core.retrievers import VectorIndexRetriever
    # kwargs = {'similarity_top_k': 5, 'index': index, 'dimensions': 3584} # 必要参数
    retriever = VectorIndexRetriever(**kwargs)
@@ -212,9 +180,7 @@
 
    **为方便在索引中插入后续节点，可以封装一层，更方便灵活使用 **
 
-   
-
-```python
+   ```python
    from llama_index.core.retrievers import VectorIndexRetriever
    from llama_index.core.schema import BaseNode
    class FAISSRetriever(VectorIndexRetriever):
@@ -233,9 +199,7 @@
 
 5. **创建 BM25 检索器**
 
-   
-
-```PYTHON
+   ```PYTHON
    from llama_index.retrievers.bm25 import BM25Retriever
    # kwargs = {'nodes':nodes, 'similarity_top_k': 5, tokenizer = tokenizer} # 必要参数
    retriever = BM25Retriever(**kwargs)
@@ -245,9 +209,7 @@
 
    **为方便在索引中插入后续节点, 同理可以再次封装**
 
-   
-
-```python
+   ```python
    from typing import Callable, Optional
    from llama_index.core import VectorStoreIndex
    from llama_index.core.callbacks.base import CallbackManager
@@ -313,7 +275,7 @@ class RAGRetriever(BaseRetriever):
         """Retrieve nodes"""
 ```
 
-混合检索 外层再次封装 `_aretraieve` 方法，按检索器顺序依次遍历； 
+混合检索 外层再次封装  `_aretraieve` 方法，按检索器顺序依次遍历； 
 
 ```python
 class SimpleHybridRetriever(RAGRetriever):
@@ -349,7 +311,7 @@ class SimpleHybridRetriever(RAGRetriever):
 
 7.**创建 reranker 重排器**
 
-模型选取 中文版本的 `BGE` 模型, 所支持的模型， `BGERerank `  `CohereRerank`  `ColbertRerank`  ` LLMRanker`
+模型选取 中文版本的 `BGE` 模型, 所支持的模型，`BGERerank `       `CohereRerank`     `ColbertRerank`            ` LLMRanker`
 
 ```pyhon
 from llama_index.postprocessor.flag_embedding_reranker import  FlagEmbeddingReranker
@@ -392,43 +354,36 @@ BaseQueryEngine -.subclass.-> PromptMixin
 
 ```
 
-* `BaseQueryEngine(). aquery  ` 将用户的`query` 字符串转化  `QueryBundle` 对象（属性签名 query_str，embedding），后执行`QueryBundle()._aquery`方法；
++ `BaseQueryEngine(). aquery  ` 将用户的`query` 字符串转化  `QueryBundle` 对象（属性签名 query_str，embedding），后执行`QueryBundle()._aquery`方法；
 
-* `QueryBundle()._aquery` 方法执行两大块，索引检索（aretrieve）和响应合成（_response_synthesizer）；
++ `QueryBundle()._aquery` 方法执行两大块，索引检索（aretrieve）和响应合成（_response_synthesizer）；
 
   + **aretrieve** :
-    检索包括 召回（ `Faiss` 向量召回， `BM25` 字面召回） 和结点后处理操作（ `BGE` 重排）两个阶段。
 
-    
+    检索包括 召回（`Faiss`向量召回，`BM25`字面召回） 和结点后处理操作（`BGE`重排）两个阶段。
 
-```python
+    ```python
             nodes = await self._retriever.aretrieve(query_bundle)
             return self._apply_node_postprocessors(nodes, query_bundle=query_bundle)
     ```
 
     **召回阶段：**
 
-    
-
-```python
+    ```python
                     nodes = await self._aretrieve(query_bundle)
                     nodes = await self._ahandle_recursive_retrieval(query_bundle, nodes)
     ```
 
     **后处理阶段：**
 
-    
-
-```python
+    ```python
             for node_postprocessor in self._node_postprocessors:
                 nodes = node_postprocessor.postprocess_nodes(
                     nodes, query_bundle=query_bundle
                 )
     ```
 
-    
-
-```mermaid
+    ```mermaid
     flowchart LR
         subgraph pipeline
         a[BaseQueryEngine.aquery] -.QueryBundle.-> RetrieverQueryEngine._aquery
@@ -438,54 +393,31 @@ BaseQueryEngine -.subclass.-> PromptMixin
     ```
 
   + **_response_synthesizer**:
+
     官方提供响应合成有多种模式，1）将块填充到提示中，2）分别创建和细化每个块，3）树摘要。放个链接可供参考：[响应合成](https://docs.llamaindex.ai/en/latest/api_reference/response_synthesizers/)
-
     
-
     获取响应接口：
-
     
-
-    
-
-```python
+    ```python
     aget_response(query_str: str, text_chunks: Sequence[str], **response_kwargs: Any) -> RESPONSE_TEXT_TYPE
     ```
-
     
-
     响应模式总结概述下：
-
     
-
     'refine'：Refine是生成响应的迭代方式。我们首先使用第一个节点中的上下文和查询来生成初始答案。然后，我们将此答案、查询和第二个节点的上下文作为输入传递到“优化提示”中，以生成精炼的答案。我们通过N-1个节点进行细化，其中N是节点的总数。
-
     
-
     'compact'：首先，紧凑和简化模式将文本块合并成更大的整合块，更充分利用可用的上下文窗口，然后在其上细化答案。这种模式比细化模式更快，因为我们对LLM的调用较少。
-
     
-
     'simple_summarize'：将所有文本块合并为一个，并进行LLM调用。如果合并的文本块超过上下文窗口大小，将失败。
-
     
-
     'tree_summarize'：在候选节点集上构建一棵树索引，其中包含一个以查询为种子的摘要提示。树是以自底向上的方式构建的，最终根节点作为响应返回。
-
     
-
     'generation'：忽略上下文，只使用LLM生成回复。
-
     
-
     'no_text'：返回检索到的上下文节点，而不合成最终响应。
-
     
-
     'accumulate' : 将每个文本块合成一个答复，然后返回串联。
-
     
-
     'compact_accumulate': 压缩和累积模式首先将文本块组合成更大的合并块，更充分利用可用的上下文窗口，然后为每个答案累积并最终返回串联。这种模式比累积模式快，因为我们对LLM的调用更少。
 
 ​            

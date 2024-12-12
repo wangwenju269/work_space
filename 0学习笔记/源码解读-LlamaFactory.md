@@ -1,3 +1,7 @@
+
+
+
+
 #                                   微调
 
 启动命令：
@@ -82,12 +86,13 @@ python src/export_model.py  \
     --export_legacy_format False            
 ```
 
+
+
 下面逐行调试的方法，细节来看SFT代码：
 
 ~~~mermaid
 graph LR
   
-
     a((run_sft)) --> b[load_tokenizer]
     a --> c[get_dataset]
     a --> d[load_model]
@@ -109,16 +114,15 @@ graph LR
     tokenizer -->  trainer
     x -->  trainer
     dataset  -->  trainer
-
 ~~~
 
-* #### 准备项： 
 
-  配置参数信息，推荐一种方法直接配置 `YAML` 文件，并加载到 `sys.argv` 变量里
 
-  
++ #### 准备项： 
 
-```python
+  配置参数信息，推荐一种方法直接配置 `YAML`文件，并加载到`sys.argv` 变量里
+
+  ```python
   # 在train_bash.py 文件里顶部添加这两行代码
   import sys
   sys.argv.append("/workspace/LLaMA-Factory/config.yaml") # 这是 yaml 文件路径
@@ -127,9 +131,7 @@ graph LR
 
   解析参数：
 
-  
-
-```python
+  ```python
   # 参数解析代码 在 LLaMA-Factory/src/llmtuner/hparams/parser.py 文件里
   def _parse_train_args(args: Optional[Dict[str, Any]] = None) -> _TRAIN_CLS:
       parser = HfArgumentParser(_TRAIN_ARGS)
@@ -158,9 +160,9 @@ graph LR
 
   仔细阅读代码不难发现：
 
-  ​ `parser.parse_args_into_dataclasses(return_remaining_strings=True)` 同理也可以实现，将命令行参数解析为指定数据类类型的实例。展开内部细看：
+  ​           `parser.parse_args_into_dataclasses(return_remaining_strings=True)`  同理也可以实现，将命令行参数解析为指定数据类类型的实例。展开内部细看：
 
-`parse_args_into_dataclasses ` 函数入参说明
+  `parse_args_into_dataclasses `函数入参说明
 
   + args 参数是一个字符串列表，包含了要解析的命令行参数。如果没有提供，默认会使用 sys.argv，这是 Python 中一个包含命令行参数的列表。
   + return_remaining_strings 参数是一个布尔值，如果设置为 True，函数不仅会返回解析后的参数，还会返回一个列表，包含所有未被解析器识别的剩余参数字符串。
@@ -168,9 +170,7 @@ graph LR
   + args_filename 参数是一个字符串，如果被指定，函数将使用这个文件名来代替默认的 “.args” 文件。
   + args_file_flag 参数是一个字符串，如果被指定，函数会在命令行参数中查找这个标志，并使用标志后面的文件作为参数文件。如果命令行中多次出现这个标志，将以最后一次出现的文件为准。
 
-  
-
-```python
+  ```python
   for dtype in self.dataclass_types:
       keys = {f.name for f in dataclasses.fields(dtype) if f.init}
       inputs = {k: v for k, v in vars(namespace).items() if k in keys}
@@ -196,15 +196,13 @@ graph LR
 
   
 
-* #### SFT 核心代码块
++ #### SFT 核心代码块
 
- `LLaMA-Factory/src/llmtuner/train/sft/workflow.py`
+  `LLaMA-Factory/src/llmtuner/train/sft/workflow.py`
 
-  + ### ` load_tokenizer  `
+  - ### ` load_tokenizer  `
 
-    
-
-```python
+    ```python
     tokenizer = AutoTokenizer.from_pretrained(
                             model_args.model_name_or_path,
                             use_fast=model_args.use_fast_tokenizer,
@@ -219,18 +217,18 @@ graph LR
     """
     ```
 
-  + ### `get_dataset`
-    get_dataset_list 函数这部分主要是数据读取和数据转化为 `DatasetAttr` 属性，load_single_dataset 从文件中读取数据，并对齐操作。 
+  - ### `get_dataset`
+
+    get_dataset_list 函数这部分主要是数据读取和数据转化为`DatasetAttr` 属性，load_single_dataset 从文件中读取数据，并对齐操作。 
 
     - 文件 `DATA_CONFIG`  也就是 `'dataset_info.json'` （依赖文件）读取到 `dataset_info`里，调试注意相对路径问题，建议`dataset_dir`参数
     -   `column_names.extend(["prompt", "query", "response", "history"])` : dataset_info 里 `columns `字段依次对齐到上述字段。
-    ###### 1. `load_dataset`
+
+    ###### 1.`load_dataset`
 
        这段代码使用 Hugging Face Transformers 库中的 `load_dataset` 函数来加载一个数据集。官方翻译如下：
 
-    
-
-```text
+    ```text
     这个函数在幕后执行以下操作：
     1. 如果库中没有缓存，则从 path 下载并导入数据集脚本。
     
@@ -245,9 +243,7 @@ graph LR
     3.返回由 split 请求的分割构建的数据集（默认：所有分割）。
     ```
 
-    
-
-```python
+    ```python
     dataset = load_dataset(
                     path=data_path,
                     name=data_name,
@@ -281,31 +277,25 @@ graph LR
 
       load_dataset 具体实施细节底层代码相对复杂，大致过程：
 
-    
-
-```text
+    ```text
     step1：模块加工 --> dataset_module_factory
     step2: 类构建 --> get_dataset_builder_class
     ```
 
     返回结果如下：
 
-    
-
-```python
+    ```python
     Dataset({
         features: ['history', 'input', 'output', 'instruction'],
         num_rows: 54
     })
     ```
 
-    ######  3. `align_dataset`
+    ######  3.`align_dataset`
 
     数据对齐操作，转化为问答对形式
 
-    
-
-```python
+    ```python
     Dataset({
         features: ['prompt', 'response', 'system', 'tools'],
         num_rows: 54
@@ -319,13 +309,11 @@ graph LR
     """
     ```
 
-    ###### 4. `get_preprocess_and_print_func` 数据处理
+    ###### 4.`get_preprocess_and_print_func` 数据处理
 
-       转化模型所需三要素条件， `input_ids` , `attention_mask` , `labels` , 采用移位 `multi_label` 方式，预测时，只计算回应的损失。
+       转化模型所需三要素条件，`input_ids`,`attention_mask`,`labels`, 采用移位`multi_label` 方式，预测时，只计算回应的损失。
 
-    
-
-```
+    ```
     """
     IGNORE_INDEX : -100
     source_ids: prompt   ---tokenzier2ids---> ids 
@@ -336,11 +324,9 @@ graph LR
     labels += source_mask + target_ids
     ```
 
-  + ### `load_model`
+  - ### `load_model`
 
-    
-
-```python
+    ```python
     model = AutoModelForCausalLM.from_pretrained(model_args.model_name_or_path, config=config, **init_kwargs)
     patch_model(model, tokenizer, model_args, is_trainable)
     # patch_model 的解释
@@ -351,12 +337,11 @@ graph LR
     """
     ```
 
-    - ###### ` init_adapter`
+    + ###### ` init_adapter`
+
       接着看下 `Lora` 微调代码细节：
 
-      
-
-```python
+      ```python
       from peft import LoraConfig
       lora_config = LoraConfig(
           task_type=TaskType.CAUSAL_LM,
@@ -368,13 +353,11 @@ graph LR
       model = get_peft_model(model, lora_config)
       ```
 
-       步进 `PeftModelForCausalLM(PeftModel)` , `PeftModel(PushToHubMixin, torch.nn.Module)` , ` LoraModel(BaseTuner)`
+       步进 `PeftModelForCausalLM(PeftModel)` ,     `PeftModel(PushToHubMixin, torch.nn.Module)`, ` LoraModel(BaseTuner)`
 
-      转到 `BaseTuner` 的 `__init__` 方法，执行了 `inject_adapter` 函数，该函数用于创建适配器层（adapter layers）并将其替换为目标模块（target modules）。调用 `peft.mapping.get_peft_model` 函数时，如果传入了非提示调优（non-prompt tuning）的适配器类，则在内部自动调用的方法。
+      转到 `BaseTuner` 的`__init__`方法，执行了`inject_adapter` 函数，该函数用于创建适配器层（adapter layers）并将其替换为目标模块（target modules）。调用 `peft.mapping.get_peft_model` 函数时，如果传入了非提示调优（non-prompt tuning）的适配器类，则在内部自动调用的方法。
 
-      
-
-```python
+      ```python
       key_list = [key for key, _ in model.named_modules()
       # key_list 是模型结构模块, 列举如下            
       """
@@ -382,11 +365,9 @@ graph LR
       """      
       ```
 
-      如果 `peft_config` 配置参数target_modules 中设置为 'c_attn'，则将模型中以 ' c_attn' 后缀结尾的 block，进行替换
+      如果`peft_config`配置参数target_modules 中设置为 'c_attn'，则将模型中以 ' c_attn' 后缀结尾的 block，进行替换
 
-      
-
-```python
+      ```python
       parent, target, target_name = _get_submodules(model, key)
       
       print(parent)
@@ -403,20 +384,16 @@ graph LR
       c_attn
       ```
 
-      接下来参数的核心是产生新的 `module` 和取代旧的 `module`
+      接下来参数的核心是产生新的`module` 和取代旧的 `module`
 
-      
-
-```python
+      ```python
       self._create_new_module(lora_config, adapter_name, target, **kwargs)
       self._replace_module(parent, target_name, new_module, target)
       ```
 
-      新的 `module` 产生：
+      新的`module` 产生：
 
-      
-
-```python
+      ```python
       #  peft.tuners.lora.layer.py
       lora.Linear(
         (base_layer): Linear(in_features=5120, out_features=15360, bias=True)
@@ -433,20 +410,12 @@ graph LR
         (lora_embedding_B): ParameterDict()
       )
       ```
-
       
-
-      具体实施细节可以参看 `LoraLayer` 类和 `self.update_layer` 方法。
-
+      具体实施细节可以参看`LoraLayer`类和 `self.update_layer` 方法。
       
-
-`new_module` 结构如下：
-
+       `new_module`  结构如下：
       
-
-      
-
-```python
+      ```python
       new_module：
       lora.Linear(
         (base_layer): Linear(in_features=5120, out_features=15360, bias=True)
@@ -463,12 +432,8 @@ graph LR
         (lora_embedding_B): ParameterDict()
       )
       ```
-
       
-
-      
-
-```python
+      ```python
           def _replace_module(self, parent, child_name, new_module, child):
               setattr(parent, child_name, new_module)
               if hasattr(child, "base_layer"):
@@ -491,26 +456,16 @@ graph LR
                       weight = child.qweight if hasattr(child, "qweight") else child.weight
                       module.to(weight.device)
       ```
-
       
-
-      这块代码显示 `module` 替换的过程，setattr(parent, child_name, new_module) 这行代码将新模块 `new_module` 赋值给父模块 `parent` 的属性 `child_name` ，从而替换掉原来的子模块 `child` . 
-
+      这块代码显示`module`替换的过程，setattr(parent, child_name, new_module) 这行代码将新模块 `new_module` 赋值给父模块 `parent` 的属性 `child_name`，从而替换掉原来的子模块 `child`. 
       
-
-`child = child.base_layer` 如果 `child` 是一个包装器，这行代码将 `child` 设置为它的基础层（原始模块)
-
+      `child = child.base_layer` 如果 `child` 是一个包装器，这行代码将 `child` 设置为它的基础层（原始模块)
       
-
-`weight = child.qweight if hasattr(child, "qweight") else child.weight` 这行代码检查原始模块是否有 `qweight` 属性，这通常表示原始模块的权重已经被量化。
+      `weight = child.qweight if hasattr(child, "qweight") else child.weight` 这行代码检查原始模块是否有 `qweight` 属性，这通常表示原始模块的权重已经被量化。
   
-  + `DataCollatorForSeq2Seq`
-
+  + `DataCollatorForSeq2Seq` 
   
-
-      
-
-```python
+    ```python
     """迭代器,用于构建dataloader"""
     data_collator = DataCollatorForSeq2Seq(
     tokenizer=tokenizer,
@@ -518,14 +473,10 @@ graph LR
     label_pad_token_id=IGNORE_INDEX if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id,
     )
     ```
-
   
   + `CustomSeq2SeqTrainer`:  Initialize  Trainer
   
-
-      
-
-```python
+    ```python
     trainer = CustomSeq2SeqTrainer(
                         model=model,
                         args=training_args,
@@ -546,25 +497,21 @@ graph LR
     """   	
     ```
 
-* #### pt 核心代码块
++ #### pt 核心代码块
 
   这部分详细介绍下预训练的代码，结构流程与上节相似，差异性如下。
 
-`get_dataset` ：不需要使用 `template` 模板，启用了“打包”（packing）功能，样本将被组织成一系列的组，每组内的文本项将是 `cutoff_len` 长度，每个文本项之间用 `eos_token` 分隔.
+  `get_dataset` ：不需要使用`template`模板，启用了“打包”（packing）功能，样本将被组织成一系列的组，每组内的文本项将是`cutoff_len` 长度，每个文本项之间用`eos_token`分隔.
 
-  
-
-```
+  ```
    text_examples = [messages[0]["content"] + tokenizer.eos_token for messages in examples["prompt"]]
   ```
 
-   提供三种训练方法： `full` , `lora` , `freeze` 三种方法，主要介绍后者，即只调模型中少量的 `block` 模块。
+   提供三种训练方法： `full`  ,`lora`  ,`freeze`  三种方法，主要介绍后者，即只调模型中少量的`block`模块。
 
   + `freeze`  ：
 
-    
-
-```python
+    ```python
            freeze_modules = {"all"}
            for name, _ in model.named_modules():
                 if ".0." in name:
@@ -606,11 +553,9 @@ graph LR
 
     
 
-* #### 模型训练
++ #### 模型训练
 
-  
-
-```
+  ```
   trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
   ```
 
@@ -618,9 +563,7 @@ graph LR
 
   step1:  加载数据迭代器     train_dataloader = self.get_train_dataloader()
 
-  
-
-```latex
+  ```latex
   + 观察数据值 next(iter(train_dataloader))
   {'input_ids': tensor([[   854, 100817, 101923,  ..., 112277,  18493,  29490],
           [    23,   7948,     21,  ..., 100627, 104147, 100178]],
@@ -635,20 +578,16 @@ graph LR
 
   step2：设置训练控制变量 
 
-  
-
-```latex
+  ```latex
    num_train_epochs
    num_update_steps_per_epoch
    max_steps
    num_examples
   ```
 
-  假设 `yaml` 文件参数配置如下：
+  假设`yaml`文件参数配置如下：
 
-  
-
-```yaml
+  ```yaml
   num_train_epochs    :   8 
   per_device_train_batch_size   : 2 
   gradient_accumulation_steps  :  2  
@@ -656,17 +595,15 @@ graph LR
   save_steps           ：   500
   ```
 
-  如果训练样本集合数量 `num_examples = 43 ` , 先计算整体 `total_train_batch_size = per_device_train_batch_size *  gradient_accumulation_steps * n_gpus ` 。假设 `gpu` 数量设置1，那么总体 `total_train_batch_size  = 4` , 迭代一轮内，扫描完全部的训练样本，参数更新所需要总步数： `num_update_steps_per_epoch = 43//4 = 11`
+  如果训练样本集合数量`num_examples = 43 `,  先计算整体`total_train_batch_size = per_device_train_batch_size *  gradient_accumulation_steps * n_gpus `。假设`gpu`数量设置1，那么总体`total_train_batch_size  = 4`, 迭代一轮内，扫描完全部的训练样本，参数更新所需要总步数：`num_update_steps_per_epoch = 43//4 = 11`
 
-`gradient_accumulation_steps` 作用是累积梯度，使得模型参数在一次更新之前能够基于多个批次的梯度进行更新。具体来说，当 `gradient_accumulation_steps` 设置为一个大于1的整数时，每个批次的梯度不会立即用来更新模型参数，而是累积起来。直到累积了 `gradient_accumulation_steps` 个批次的梯度后，这些梯度才会被用来计算参数的更新。这种方法在训练时可以减少内存的使用，因为每个批次的样本数量减少了，同时保持了较大的有效批量大小，这对于模型的收敛和性能是有益的。
+  `gradient_accumulation_steps` 作用是累积梯度，使得模型参数在一次更新之前能够基于多个批次的梯度进行更新。具体来说，当 `gradient_accumulation_steps` 设置为一个大于1的整数时，每个批次的梯度不会立即用来更新模型参数，而是累积起来。直到累积了 `gradient_accumulation_steps` 个批次的梯度后，这些梯度才会被用来计算参数的更新。这种方法在训练时可以减少内存的使用，因为每个批次的样本数量减少了，同时保持了较大的有效批量大小，这对于模型的收敛和性能是有益的。
 
   
 
   step3:   设置优化器和任务调度器  
 
-  
-
-```python
+  ```python
   self.create_optimizer_and_scheduler(num_training_steps=max_steps)
   ```
 
@@ -674,9 +611,7 @@ graph LR
 
   + `TrainerState` : 这个类包含一个内部状态（inner state），该状态在模型和优化器进行检查点（checkpointing）保存时会被一同保存下来，并且会传递给 `TrainerCallback`，并传递给 [`TrainerCallback`]。
 
-    
-
-```python
+    ```python
     # 实例化
     self.state
     >>>
@@ -685,9 +620,7 @@ graph LR
 
   + `TrainerCallback`： 这是一个内部类，它按顺序调用回调函数列表。
 
-    
-
-```latex
+    ```latex
     # 实例化
     self.callback_handler
     # 可调用方法主要有：
@@ -708,18 +641,14 @@ graph LR
 
   + `TrainerControl`: 专门用来管理训练过程中控制流程的类。在训练过程中，可能需要根据某些条件改变流程，比如提前终止训练、改变学习率等。
 
-    
-
-```python
+    ```python
     # 实例化
     self.control
     >>>
     TrainerControl(should_training_stop=False, should_epoch_stop=False, should_save=False, should_evaluate=False, should_log=False)
     ```
 
-       + 
-
-```
+       + ```
          # 控制开关更新顺序
          self.control = self.callback_handler.on_train_begin(args, self.state, self.control)
          self.control = self.callback_handler.on_epoch_begin(args, self.state, self.control)
@@ -746,7 +675,6 @@ tr_loss_step:
 
 ```python、
 CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
-
     --stage sft \
     --do_train \
     --model_name_or_path path_to_llama_model \
@@ -765,7 +693,6 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
     --num_train_epochs 3.0 \
     --plot_loss \
     --fp16
-
 ```
 
 + #### 模型评估
@@ -779,5 +706,33 @@ CUDA_VISIBLE_DEVICES=0 python src/train_bash.py \
   
 
  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .
