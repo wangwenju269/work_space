@@ -492,7 +492,6 @@
   ```python
   # 脚本文件名：必须准确该出api的名字信息，eg:safe_detech.py   api.py
   # 代码格式 格式如下：
-  
   class your_api_name: #api的名字，首字母大写
       def __init__(self) -> None:
           self.access_token_url = "" #可以访问的 url
@@ -513,9 +512,9 @@
          """       
   
   ```
-
+  
   **格式：**
-
+  
   ```python
     # 工具注册的模板  
           {
