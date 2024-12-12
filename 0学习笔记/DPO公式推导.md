@@ -4,7 +4,7 @@
 
 + **技术背景知识：**
 
-  首先给定prompt x，生成两个答案$(y_1,y_2)~\Pi^{SFT}(y|x)$ ，并通过人工标注对比$y_1,y_2$ ，获得偏好结果(preference) $y_w\succ y_l|x$，其中$w$和$l$表示`win`和`lose`。
+  首先给定prompt x，生成两个答案$(y_1,y_2)~\Pi^{SFT}(y|x)$ ，并通过人工标注对比$y_1,y_2$，获得偏好结果(preference) $y_w\succ y_l|x$，其中$w$和$l$表示`win`和`lose`。
 
   引入奖励模型$r$  , $y_1 > y_2$ 的概率可以表示为
   $$
@@ -94,7 +94,6 @@
   \nabla_\theta Loss(\pi_{\theta};\pi_{ref}) = -\beta E_{(x,y_w,y_l)\sim D}[\underbrace{\sigma(\hat{r}^*(x,y_w) -\hat{r}^*(x,y_l))}_{higher\ weight\ when\ reward\ estimate\ is\ wrong} [\underbrace{\nabla_{\theta}log \pi(y_w|x)}_{\ \ \  \ \ \ \ \  \ increase \  likelihood\ of\ y_w} - \underbrace{\nabla_{\theta}log \pi(y_l|x)}_{decrease \ likelihood \ of \ y_l} ]]
   $$
   
-
 + **改进方法ODPO**
 
   `dpo`缺陷主要是：采用`Bradley–Terry model`只给出了一个`response`比另一个`response`好的概率，而没有告诉我们好的程度。
