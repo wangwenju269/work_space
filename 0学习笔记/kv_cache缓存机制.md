@@ -26,7 +26,7 @@
     - **随着prompt数量变多和序列变长，KV cache也变大，对gpu显存造成压力**
     - **由于输出的序列长度无法预先知道，很难提前为KV cache量身定制存储空间, 见vLLM**
 
-  ******
+******
 
 * ### 内存管理：
 
@@ -64,28 +64,24 @@
     - **代码**
 
     kv_cache 以元组的形式，通过 `past_key_values` 字段传递。假设将原始输入进行线性变化（ `MLP` ）后，将转化结果保存在 `past_key_values` 里 , 便是（ `P-tuning V2` ， `Prefix_tuning` ）.
-
-```python
-      query, key, value = self.c_attn(hidden_states).split(self.split_size, dim=2)
-      query = self._split_heads(query, self.num_heads, self.head_dim)  # 当前token对应的query
-      key = self._split_heads(key, self.num_heads, self.head_dim)  # 当前token对应的key
-      value = self._split_heads(value, self.num_heads, self.head_dim)  # 当前token对应的value
-      
-      if layer_past is not None:
-          past_key, past_value = layer_past  # KV Cache
-          key = torch.cat((past_key, key), dim=-2)  # 将当前token的key与历史的K拼接
-          value = torch.cat((past_value, value), dim=-2)  # 将当前token的value与历史的V拼接
-      
-      if use_cache is True: 
-          present = (key, value)     
-      else:
-          present = None
+    
+    ```python
+          query, key, value = self.c_attn(hidden_states).split(self.split_size, dim=2)
+          query = self._split_heads(query, self.num_heads, self.head_dim)  # 当前token对应的query
+          key = self._split_heads(key, self.num_heads, self.head_dim)  # 当前token对应的key
+          value = self._split_heads(value, self.num_heads, self.head_dim)  # 当前token对应的value
+          
+          if layer_past is not None:
+              past_key, past_value = layer_past  # KV Cache
+              key = torch.cat((past_key, key), dim=-2)  # 将当前token的key与历史的K拼接
+              value = torch.cat((past_value, value), dim=-2)  # 将当前token的value与历史的V拼接
+          
+          if use_cache is True: 
+              present = (key, value)     
+          else:
+              present = None
     ```
-
-      入参口：
-    kv_cache 以元组的形式，通过 `past_key_values` 字段传递。假设将原始输入进行线性变化（ `MLP` ）后，将转化结果保存在 `past_key_values` 里 , 便是（ `P-tuning V2` ， `Prefix_tuning` ）.
-
-```python
+    ```python
       transformer_outputs = self.transformer(
                   input_ids,
                   past_key_values=past_key_values,
@@ -93,8 +89,7 @@
                   token_type_ids=token_type_ids,
                   **kwargs)
     ```
-
-    kv_cache 以元组的形式，通过 `past_key_values` 字段传递。假设将原始输入进行线性变化（ `MLP` ）后，将转化结果保存在 `past_key_values` 里 , 便是（ `P-tuning V2` ， `Prefix_tuning` ）.
+  kv_cache 以元组的形式，通过 `past_key_values` 字段传递。假设将原始输入进行线性变  化（ `MLP` ）后，将转化结果保存在 `past_key_values` 里 , 便是（ `P-tuning V2` ， `Prefix_tuning` ）
 
   + **`MQA`方法**：
     设$[b,s,h=2048]$，而 `MQA` 实现 `k` , `v` 共享机制，及投影矩阵$W$ 维度发生变化。
@@ -119,7 +114,7 @@
     v^{(s)}_i=x_iW^{(s)}_v∈R^{d_v}, W^{(s)}_v∈R^{d×d_v}
     $$
 
-  
+
 * **`GQA` 方法:** 
   
   GQA的思想也很朴素，它就是将所有Head分为$g$个组（$g$可以整除$ℎ$），每组共享同一对K、V，用数学公式表示为:
@@ -132,38 +127,36 @@
   v^{([sg/h])}_i=x_iW^{([sg/h])}_v∈R^{d_v}, W^{([sg/h])}_v∈R^{d×d_v}
   $$
   
+
 `GQA` 是 `MHA` 到 `MQA` 的自然过渡，当 `g=h` 时就是 `MHA` ， `g=1` 时就是MQA，当 `1<g<h` 时，它只将KV Cache压缩到 `g/h` ，压缩率不如 `MQA` ，但同时也提供了更大的自由度，效果上更有保证。
 
-    
++ **`MLA`方法：**
 
-* **`MLA`方法：**
-  
-  首先分析 `GQA` 在投影后做什么？首先它将向量对半分为两份分别作为K、V，然后每一份又均分为  𝑔 份，每一份复制 ℎ/𝑔 次，以此来“凑”够 h 个Attention Head所需要的K、V。  由于分割、复制都是简单的线性变换，所以 `MLA` 的想法是将这些简单的线性变换换成一般的线性变换，以增强模型的能力。即：通过不同的投影矩阵再次让所有的K、V Head都变得各不相同。
-  $$
-  o_t=[o^{(1)}_t, o^{(2)}_t, ⋯, o^{(h)}_t]  \\
-  o^{(s)}_t=Attention(q^{(s)}_t, k^{(s)}_{≤t}, v^{(s)}_{≤t}) \\
-  ≜\frac{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})v_i^{(s)}}{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})}   \\
-  q^{(s)}_i=x_iW^{(s)}_q∈R^{d_k}, W^{(s)}_q∈R^{d×d_k} \\
-  k^{(s)}_i=c_iW^{(s)}_k∈R^{d_k}, W^{(s)}_k∈R^{d_c×d_k} \\
-  v^{(s)}_i=c_iW^{(s)}_v∈R^{d_v}, W^{(s)}_v∈R^{d_c×d_v} \\
-  c_i=x_iW_c∈R^{d_c}, W_c∈R^{d×d_c}
-  $$
-  
+首先分析 `GQA` 在投影后做什么？首先它将向量对半分为两份分别作为K、V，然后每一份又均分为  𝑔 份，每一份复制 ℎ/𝑔 次，以此来“凑”够 h 个Attention Head所需要的K、V。  由于分割、复制都是简单的线性变换，所以 `MLA` 的想法是将这些简单的线性变换换成一般的线性变换，以增强模型的能力。即：通过不同的投影矩阵再次让所有的K、V Head都变得各不相同。
+$$
+o_t=[o^{(1)}_t, o^{(2)}_t, ⋯, o^{(h)}_t]  \\
+o^{(s)}_t=Attention(q^{(s)}_t, k^{(s)}_{≤t}, v^{(s)}_{≤t}) \\
+≜\frac{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})v_i^{(s)}}{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})}   \\
+q^{(s)}_i=x_iW^{(s)}_q∈R^{d_k}, W^{(s)}_q∈R^{d×d_k} \\
+k^{(s)}_i=c_iW^{(s)}_k∈R^{d_k}, W^{(s)}_k∈R^{d_c×d_k} \\
+v^{(s)}_i=c_iW^{(s)}_v∈R^{d_v}, W^{(s)}_v∈R^{d_c×d_v} \\
+c_i=x_iW_c∈R^{d_c}, W_c∈R^{d×d_c}
+$$
 **技巧1**: **恒等变化**
-  $$
+$$
   q_i^{(s)} * k_i^{(s)T} =   (x_tW^{(s)}_q)(c_iW^{(s)}_k)^⊤=x_t(W^{(s)}_q. W^{(s)T}_{k})c^⊤_i
-  $$
+$$
   即$W_k$ 被 $W_q$ 吸入，同理$W_v$ 被 $W_o$ 吸入。也就是说此时KV Cache只需要存下所有的$c_i$就行，而不至于存下所有的$k_i^{(s)}$, $v_i^{(s)}$。 其实就是通过低秩分解，压缩KV Cache，通过不同的投影矩阵相当于增强了GQA的能力。
 
 **缺点：**不兼容 `RoPE` 旋转位置编码，矩阵乘法不满足交换律.
-  $$
+$$
   q^{(s)}_i=x_iW^{(s)}_q\mathbb{R}_i \\
   k^{(s)}_i=c_iW^{(s)}_k\mathbb{R}_i \\
   q^{(s)}_ik^{(s)_T}_j = (x_iW^{(s)}_q\mathbb{R}_i)(c_jW^{(s)}_k\mathbb{R}_j)^T = x_i(W^{(s)}_q\mathbb{R}_{i-j}k^{(s)_T})c_i^T
-  $$
+$$
   解决方案： **维度拼接**, 每个Attention Head的Q、K新增$𝑑𝑟$个维度用来添加RoPE，其中K新增的维度每个Head共享：
   **query embbeding = [token_emb; pos_emb]**
-  $$
+$$
   o_t=[o^{(1)}_t, o^{(2)}_t, ⋯, o^{(h)}_t]  \\
   o^{(s)}_t=Attention(q^{(s)}_t, k^{(s)}_{≤t}, v^{(s)}_{≤t}) \\
   ≜\frac{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})v_i^{(s)}}{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})}   \\
@@ -171,12 +164,12 @@
   k^{(s)}_i=[x_iW^{(s)}_{kc}, x_iW_{kr}\mathbb{R}_i]∈R^{d_k+d_r}, W^{(s)}_{kc}∈R^{d×d_k}, W^{(s)}_{kr}∈R^{d×d_r} \\
   v^{(s)}_i=c_iW^{(s)}_v∈R^{d_v}, W^{(s)}_v∈R^{d_c×d_v} \\
   c_i=x_iW_c∈R^{d_c}, W_c∈R^{d×d_c}
-  $$
+$$
   ![](./assets/kv_cache/MLA.png)
 
   在推理时KV Cache只需要存$c_i$，新增的带RoPE的维度就可以用来补充位置信息，并且由于所有Head共享，所以也就只有在K Cache这里增加了$d_r$个维度。
   推理阶段最终表现形式：
-  $$
+$$
   o_t=[o^{(1)}_tW_v^{(1)}, o^{(2)}_tW_v^{(2)}, ⋯, o^{(h)}_tW_v^{(h)}]  \\
   o^{(s)}_t=Attention(q^{(s)}_t, k^{(s)}_{≤t}, v^{(s)}_{≤t}) \\
   ≜\frac{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})v_i^{(s)}}{∑_{i≤t}exp(q^{(s)}_tk_i^{(s)_T})}   \\
@@ -185,6 +178,6 @@
   W^{(s)}_{qc}∈R^{d_c^{'}×d_k}, W^{(s)}_{kc}∈R^{d_c×d_k}, W^{(s)}_{qr}∈R^{d_c^{'}×d_r}, W_{kr}∈R^{d×d_r} \\
   c_i^{'}=x_iW_c^{'}∈R^{d_c^{'}}, W_c∈R^{d×d_c^{'}} \\
   c_i=x_iW_c∈R^{d_c}, W_c∈R^{d×d_c}
-  $$
+$$
 
   
