@@ -59,11 +59,6 @@ class REACTActionParser(ActionParser):
                 f'Error during parse action might be handled with detail {e}')
             return ActionParser.handle_fallback(action, action_para)
 
-
-
-
-
-
 class OpenAiFunctionsActionParser(ActionParser):
     def parse_response(self, response: dict) -> Tuple[str, Dict]:
         """parse response of llm to get tool name and parameters
