@@ -226,6 +226,8 @@
 
 + ####  流程
 
+  ![calling](./2单智能体/assets/calling.jpg)
+
   1. **输入信息**
 
      要解决的问题(instruction),**语言模型**(llm), **外部调用工具 API**
