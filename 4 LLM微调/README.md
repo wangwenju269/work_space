@@ -75,18 +75,17 @@
     ```
     
   + **伪指令生成**
-  
     <details>
       <summary>
-         <b>指令生成提示词</b>
+        <b>指令生成提示词</b>
       </summary>
     
-    ```python
-    """
-    {context_str}
-    请针对这篇文章，提出{num_questions}个中文问题，保证问题多样性、尽可能覆盖全部内容，格式如下: "1: ", "2: ", ...
-    """
-    ```
+      ```python
+      """
+      {context_str}
+      请针对这篇文章，提出{num_questions}个中文问题，保证问题多样性、尽可能覆盖全部内容，格式如下: "1: ", "2: ", ...
+      """
+      ```
   
   + **段落生成**
       <details>
@@ -115,21 +114,22 @@
     在当前目录下，提供一个用于生成合成数据的脚本。运行 `pipeline.py` 脚本时，传入文件数据目录，即可获取样本集合。
     
       <details>
-            <summary>
-              <b>字段名称</b>
-            </summary>
+        <summary>
+          <b>字段名称</b>
+        </summary>
     
-           ```python
-              {
-                  "instruction": "<具体指令>",
-                  "title": "<当前标题信息>",
-                  "content": "<检索相关信息或文件块信息>",
-                  "output": "<输出段落信息>"
-              },
-           ```
+    ~~~python
+    ```python
+          {
+              "instruction": "<具体指令>",
+              "title": "<当前标题信息>",
+              "content": "<检索相关信息或文件块信息>",
+              "output": "<输出段落信息>"
+          },
+    ```
+    ~~~
     
       微调数据的格式通常为`alpaca`或`sharegpt`，述字段格式进行转化。
-    
       </details>
 
 ------
