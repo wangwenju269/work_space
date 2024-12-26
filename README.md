@@ -253,12 +253,14 @@
 
   + ##### Full-parameter finetuning
   全参数参数微调需要在整个训练过程中更新LLM的所有参数。请在 shell 脚本中指定正确的 MODEL 路径、DATA 路径等。
+  
       ```shell
       sh finetune.sh
       ```
   
   + ##### LoRA finetuning
     LoRA 允许仅通过更新一小部分参数进行轻量级模型调整。本仓库基于 `peft` 提供 LoRA 实现。要启动您的训练，请运行以下脚本。
+    
       ```shell
       sh finetune_lora.sh
       ```
