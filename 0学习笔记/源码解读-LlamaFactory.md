@@ -334,9 +334,11 @@ graph TD
           trainer.train(resume_from_checkpoint=training_args.resume_from_checkpoint)
 	```
 	直接步入到 `_inner_training_loop` 
-	**step1:  加载数据迭代器  self.get_train_dataloader()**
+	
+  **step1:  加载数据迭代器  self.get_train_dataloader()**
   
-    <details> <summary> <b>示例</b> </summary>
+    <details> <summary> <b>运行结果</b> </summary>
+  
   
     ```latex
     + 观察数据值 next(iter(train_dataloader))
@@ -354,7 +356,8 @@ graph TD
   
   **step2：设置训练控制变量** 
   
-  <details> <summary> <b>示例</b> </summary>
+  <details> <summary> <b>变量</b> </summary>
+  
   
     ```latex
     num_train_epochs
@@ -365,10 +368,11 @@ graph TD
   </details>  
   
   `gradient_accumulation_steps` 作用是累积梯度，使得模型参数在一次更新之前能够基于多个批次的梯度进行更新。具体来说，当 `gradient_accumulation_steps` 设置为一个大于1的整数时，每个批次的梯度不会立即用来更新模型参数，而是累积起来。直到累积了 `gradient_accumulation_steps` 个批次的梯度后，这些梯度才会被用来计算参数的更新。这种方法在训练时可以减少内存的使用，因为每个批次的样本数量减少了，同时保持了较大的有效批量大小，这对于模型的收敛和性能是有益的。
-
+  
   **step3: 设置优化器和任务调度器**  
-
-  <details> <summary> <b>示例</b> </summary>
+  
+  <details> <summary> <b>执行代码</b> </summary>
+  
   
     ```python
     self.create_optimizer_and_scheduler(num_training_steps=max_steps)
@@ -376,9 +380,10 @@ graph TD
   </details> 
   
   **step4:状态，回调，控制**
-
+  
   `TrainerState`: 这个类包含一个内部状态（inner state），该状态在模型和优化器进行检查点（checkpointing）保存时会被一同保存下来，并且会传递给 `TrainerCallback`，并传递给 [`TrainerCallback`]。
-  <details> <summary> <b>示例</b> </summary>
+  <details> <summary> <b>实例化</b> </summary>
+  
   
     ```python
     # 实例化
@@ -387,10 +392,8 @@ graph TD
     TrainerState(epoch=0, global_step=0, max_steps=296, logging_steps=10, eval_steps=10, save_steps=500, train_batch_size=2, num_train_epochs=8, num_input_tokens_seen=0, total_flos=0, log_history=[], best_metric=None, best_model_checkpoint=None, is_local_process_zero=True, is_world_process_zero=True, is_hyper_param_search=False, trial_name=None, trial_params=None)
     ```
   </details>  
-
-  <details> <summary> <b>TrainerCallback</b> </summary>
-
   
+  <details> <summary> <b>TrainerCallback</b> </summary>
     ```latex
     # 实例化
     self.callback_handler
@@ -412,10 +415,8 @@ graph TD
   </details> 
   
   `TrainerControl` 专门用来管理训练过程中控制流程的类。在训练过程中，可能需要根据某些条件改变流程，比如提前终止训练、改变学习率等。
-
-  <details> <summary> <b>`TrainerControl`</b> </summary>
-
   
+  <details> <summary> <b>`TrainerControl`</b> </summary>
       ```python
       # 实例化
       self.control:TrainerControl(should_training_stop=False, should_epoch_stop=False, should_save=False, should_evaluate=False, should_log=False)
