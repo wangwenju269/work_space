@@ -83,7 +83,7 @@ graph LR
 
    - **为了提升性能**，DDP将**模型参数划分为多个小的bucket**，并在**bucket级别**进行`allreduce`操作。这样，**当一个bucket的梯度计算完成后**，可以立即开始通信，而其他bucket的梯度仍在计算中。这种设计实现了计算和通信过程的时间重叠，从而优化了整体性能。
 
-     ![image-20250109162525798](.\assets\deepspeed\bucket.png)
+     ![image-20250109162525798](./assets/deepspeed/bucket.png)
 
 3. **启动方式**：
 
