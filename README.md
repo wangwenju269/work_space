@@ -12,11 +12,16 @@
   - [MOE](https://blog.csdn.net/weixin_43214046/article/details/140260910?spm=1001.2014.3001.5501)
   - [vllm理解](https://blog.csdn.net/weixin_43214046/article/details/140260029?spm=1001.2014.3001.5501)
   - ...
-- **公众号:**
+  
+- **公众号:  AI 学习路线**
+  
   - [Qwen2 源码解析](https://mp.weixin.qq.com/s/JAehUA4OFKmT2fcsS4U4pQ)
+  
   - [一网打尽智普长文本训练技术](https://mp.weixin.qq.com/s/7vr-JalvF94fxevOIcZDYQ)
-  - [O1系列：Quiet-STaR 论文深度解读](https://mp.weixin.qq.com/s/KKWKt-kJcZ2RPrSWQnigUw)
-  - ...
+  
+  - **个人公众号**
+  
+    ![AI_Grow](./0学习笔记/assets/AI_Grow.jpg)
 
 若Github或博客阅读不便，相关PDF文件可在飞书中获取。 [飞书链接](https://icnpnkoo94pw.feishu.cn/drive/folder/NQh5fteudlNvx0d919NcDs02nCc)
 
@@ -332,6 +337,124 @@
 + #### 测试
 
    ![workflow](./2单智能体/assets/demo.png)
+
+------
+
+## Llama-index 搭建合同条款审查系统
+
+本教程向您展示如何创建一个能够审查合同是否符合某些法规的智能体工作流程。首先将解析合同为一系列关键条款，将其与**指南标准库**中的相关条款进行匹配，进行合规性审查。[博客链接](https://mp.weixin.qq.com/s?__biz=Mzk0ODcyMTE3NQ==&mid=2247483961&idx=1&sn=c248352bf527b1fd0db4c1cb1db70111&chksm=c20274f3fdd43ec7077c10ee2be9ae564f80968078aa49b12ed98c210af1fbf92a2f72697534&scene=126&sessionid=1740965658#rd)
+
++  预定义 `Schema`:
+
+  模型旨在从协议中提取符合特定`schema`的字段，例如协议某些关联实体、实体所对应条款等，确保`LLM`按照`pydantic`格式化输出。整个工作流程模块如下:
+
+  **提取模块**：从协议中提取相关的条款及条款的相关指示列表。
+
+  **比对模块**：合规性检查，比对条款是否满足标准文件的要求。
+
+  **报告合成**： 根据合规性响应的结果，生成检查报告。
+
+  下面已 **提取模块 **为例，定义模型输出格式：
+
+  ```python
+  class ContractClause(BaseModel):
+      clause_text: str = Field(..., description="条款的确切文本")
+      mentions_safeguards: bool = Field(False, description="如果条款提到安全措施或其他数据保护措施，则为真")
+  
+  class ContractExtraction(BaseModel):
+      vendor_name: Optional[str] = Field(None, description="供应商名字")
+      effective_date: Optional[str] = Field(None, description="如果可用，则为协议的有效日期")
+      governing_law: Optional[str] = Field(None, description="如果有的话，则为合同的管理法律")
+      clauses: List[ContractClause] = Field(..., description= "提取的条款及其相关指标列表")
+  ```
+
+  `ContractClause`中定义了自定义条款指标的列表，其中每个字段都通过`pydantic`进行了明确的类型和描述定义，这有助于辅助模型`llm`更准确地推断出每个字段的参数信息。
+
+  上述预定义 `Schema` 类通过 `model_json_schema`的方法会被转化成` json` 格式，该` json` 格式会被 `format_messages` 消息，添加到提示词中。例如以下是`schema` 类转化的输出提示词：
+
+  ```python
+  """
+  {{
+  "$defs":
+  "ContractClause":
+       "properties":
+                   {{
+                   "clause_text": {{"description": "条款的确切文本.", "title": "Clause Text", "type": "string"}},
+                   "mentions_safeguards": {{"default": false, "description": "如果条款提到安全措施或其他数据保护措施，则为真", "title": "Mentions Safeguards", "type": "boolean"}}}},
+                   "required": ["clause_text"],
+                   "title": "ContractClause",
+                    "type": "object"
+                    }}
+                    ....              
+  }}
+  """
+  ```
+
++ **LLM 模型配置**： 本博客配置`deepseek` 模型，自定义`UserLLM`的类别，该类继承 `llama_index.core.llms CustomLLM` ，并实现`metadata` 和 `complete`方法。
+
++ **总结:** 
+
+  将实体抽取(字段)、事件抽取(条款)，匹配任务 (条款-法律法规) 等传统nlp任务，转化统一格式，即**函数求参模式**，预定义输出`schema`函数类型，`llm` 推理出该`schema`函数所需参数信息。
+
++ **贡献：**
+
+  本博客文章已被多个知名平台收录转载，转载量100+，点赞评论[转载链接](https://mp.weixin.qq.com/s?__biz=MjM5ODkzMzMwMQ==&mid=2650447840&idx=3&sn=d334bfbf704e144e980a222c11b5b7ae&chksm=bf4452255b95ae853b3c44ef388b223561263fa950b162b5ef5c15847f23f419f8f9eaea0c53&scene=126&sessionid=1740967303#rd)。
+
+------
+
+## 基于LLM 决策能力实现文献收集和报告生成的方法
+
++ **背景目的：**
+
+  本博客旨在构建一个智能化的文献数据收集系统，通过整合多种AI技术，实现从数据源发现、数据阅读、内容提取到知识入库的全流程自动化，为提供高效、准确、全面的文献数据支持。[整篇博客链接](https://mp.weixin.qq.com/s?__biz=Mzk0ODcyMTE3NQ==&mid=2247483978&idx=1&sn=32c9a6432d932c33fe97484d5a153463&chksm=c2b032bfa42322f5071a0231b35d1a52bed6b2cf007f4b38c38b8eadcca6972d38f8c9886f69&scene=126&sessionid=1740967821#rd)
+
++ **Formulate**：
+
+  首先需要深入理解人类撰写领域报告的流程，并将其分解为可被AI系统执行的步骤。以下是优化后的任务流程描述及对应的流程图。
+
+  ```tex
+  +-------------------+
+  | 第一步：数据定位与筛选 |
+  | 1. 解析关键要素      |
+  | 2. 检索相关文档      |
+  | 3. 初步筛选文档      |
+  +-------------------+
+           |
+           v
+  +-------------------+
+  | 第二步：数据有用性评估 |
+  | 分析文档内容是否有用   |
+  +-------------------+
+           |
+           v
+  +-------------------+       +-------------------+
+  | 数据是否有用？     | ——否——> 返回第一步         |
+  +-------------------+       +-------------------+
+           | 是
+           v
+  +-------------------+
+  | 第三步：数据入库    |
+  | 1. 文档数据总结   |
+  | 2. 存储到数据库     |
+  +-------------------+
+           |
+           v
+  +-------------------+
+  |生成满足特定需求的报告 |
+  +-------------------+
+  ```
+
++ **角色和动作**
+
+  根据任务需求，系统主要涉及两个核心角色：**Reviewer（评审者）**和 **Writer撰写者**。其中，`Reviewer`负责数据的定位、筛选和入库，而`Writer`则负责基于检索到数据生成专业化的技术报告。
+
+  1. **Reviewer（评审者）**：
+
+     **职责**：负责从多源异构数据中定位、筛选和提取有用信息，为后续技术报告生成提供数据支持。**核心动作**：**SUMMARY**：基于关键要素生成搜索查询，定位语义相关的文档。**FULL_TEXT**：深入阅读整篇文档或者分块上下文窗口信息，评估其内容的有用性。**ADD_PAPER**：将相关文献及其提取的结构化数据入库。
+
+  2. **Writer（撰写者）**：
+
+     职责：基于Reviewer提供的有效数据信息，生成逻辑清晰、内容准确的领域报告。以“"**数字化经济关于出口贸易影响**"”为例，直观感受下整体工作流运转模式，[展示地址](https://mmbiz.qpic.cn/sz_mmbiz_png/GLt9ia2KUZfNouJ0nNDmz6mkmuXCDB8CW4brzwIyicZu7KEkbxMX2n9YicxO1OMialhmVaSUYUwssyLG11L2lm3iaxg/640?wx_fmt=png&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
 
 ------
 
