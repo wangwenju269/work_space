@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文献深度搜索系统</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f7f7f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e5e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: white;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+       
+        .user-message {
+            align-self: flex-end;
+            background-color: #1a73e8;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+
+        
+        .input-container {
+            padding: 12px 16px;
+            border-top: 1px solid #e5e5e6;
+            background-color: white;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e5e5e6;
+            border-radius: 24px;
+            outline: none;
+            font-size: 16px;
+            resize: none;
+            max-height: 120px;
+        }
+        
+        .send-button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .send-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        
+        .options-container {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .option-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            align-self: flex-start;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #666;
+            border-radius: 50%;
+            animation: typing-animation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing-animation {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        .model-info {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        .file-upload-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .file-upload-button:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-preview {
+            margin-top: 8px;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-preview-name {
+            font-size: 14px;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-preview-status {
+            font-size: 12px;
+            color: #4CAF50;
+            margin-left: 8px;
+        }
+        
+        .file-preview-remove {
+            color: #ff4444;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .input-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* 在原有CSS中添加 */
+        .collapse-header {
+            cursor: pointer;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .collapse-header:hover {
+            background-color: #ebebeb;
+        }
+
+        .collapse-content {
+            padding: 8px;
+            border-left: 2px solid #e5e5e6;
+            margin-left: 8px;
+        }
+
+        .arrow {
+            font-size: 12px;
+            transition: transform 0.2s;
+        }
+
+        .collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .collapsed + .collapse-content {
+            display: none;
+        }   
+        
+        /* 改进折叠样式 */
+        .collapse-header {
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .collapse-header:hover {
+            background-color: #e9ecef;
+        }
+
+        .arrow {
+            font-size: 12px;
+            transition: transform 0.2s ease;
+            color: #666;
+        }
+
+        .summary {
+            flex: 1;
+            color: #444;
+            font-size: 14px;
+        }
+
+        .collapse-content {
+            padding: 12px;
+            margin-top: 8px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .message:not(.collapsed) .collapse-content {
+            display: block;
+        }
+
+        .model-info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+        }
+
+
+        .message {
+            max-width: 78%;
+            min-width: 40%;  /* 添加最小宽度限制 */
+            padding: 12px 16px;
+            border-radius: 18px;
+            line-height: 1.5;
+            position: relative;
+            width: fit-content;
+        }
+
+        /* 调整用户消息的右边距 */
+        .user-message {
+            margin-left: auto;
+            margin-right: 16px;  /* 增加右侧留白 */
+            max-width: calc(78% - 16px);  /* 补偿边距 */
+        }
+
+        .bot-message {
+            align-self: flex-start;
+            background-color: white;
+            border: 1px solid #e5e5e6;
+            border-bottom-left-radius: 4px;
+            margin-right: auto;
+            margin-left: 16px;  /* 增加左侧留白 */
+            max-width: calc(78% - 16px);  /* 补偿边距 */
+        }
+
+        /* 确保折叠内容对齐 */
+        .collapse-header {
+            padding-right: 24px;  /* 为箭头留出空间 */
+        }
+
+        /* 统一消息框的宽度计算方式 */
+        .user-message, .bot-message {
+            box-sizing: border-box;
+            word-break: break-word;  /* 长单词自动换行 */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-title">文献深度搜索系统</div>
+    </div>
+    
+    <div class="chat-container" id="chatContainer">
+        <!-- 消息将在这里动态添加 -->
+    </div>
+    
+    <div class="input-container">
+        <div class="input-area">
+            <div class="input-row">
+                <button class="file-upload-button" id="fileUploadButton" title="上传文件">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17 8L12 3L7 8" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 3V15" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <textarea class="message-input" id="messageInput" placeholder="输入消息..." rows="1"></textarea>
+                <button class="send-button" id="sendButton" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="options-container">
+                <label class="option-checkbox">
+                    <input type="checkbox" id="webSearchCheckbox"> 联网搜索
+                </label>
+            </div>
+            <div id="filePreviewContainer"></div>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" class="file-input" multiple>
+    
+    <script>
+        // DOM元素
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const webSearchCheckbox = document.getElementById('webSearchCheckbox');
+        const fileUploadButton = document.getElementById('fileUploadButton');
+        const fileInput = document.getElementById('fileInput');
+        const filePreviewContainer = document.getElementById('filePreviewContainer');
+        
+        // 状态变量
+        let selectedFiles = []; // 保存选择的文件信息
+        let fileContentsCache = []; // 缓存文件解析内容
+        
+        // 自动调整输入框高度
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+        
+        // 启用/禁用发送按钮
+        function updateSendButtonState() {
+            sendButton.disabled = messageInput.value.trim() === '' && fileContentsCache.length === 0;
+        }
+        
+        messageInput.addEventListener('input', updateSendButtonState);
+        
+        // 文件上传按钮点击
+        fileUploadButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // 文件选择处理
+        fileInput.addEventListener('change', async (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                const files = Array.from(e.target.files);
+                
+                // 显示上传中状态
+                fileUploadButton.innerHTML = '上传中...';
+                
+                try {
+                    const formData = new FormData();
+                    files.forEach(file => {
+                        if (file instanceof File) {
+                            formData.append('files', file);
+                        }
+                    });
+                    
+                    // 发送文件到上传接口
+                    const response = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`文件上传失败: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (!data.success) {
+                        throw new Error(data.error || '文件上传失败');
+                    }
+                    
+                    // 保存上传的文件信息（只保存文件名）
+                    selectedFiles = data.contents.map(item => ({
+                        name: item.filename || '未命名文件',
+                        size: item.size || '未知大小'
+                    }));
+                    
+                    // 缓存文件解析内容
+                    fileContentsCache = data.contents;
+                    
+                    // 显示文件上传成功的消息
+                    // addMessage(`${files.length}个文件上传并解析成功`, 'bot');
+                    
+                    // 显示文件预览
+                    renderFilePreviews();
+                    updateSendButtonState();
+                    
+                } catch (error) {
+                    addMessage('文件上传失败: ' + error.message, 'bot');
+                    console.error('文件上传出错:', error);
+                } finally {
+                    // 恢复上传按钮图标
+                    fileUploadButton.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 8L12 3L7 8" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 3V15" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                    fileInput.value = '';
+                }
+            }
+        });
+        
+        // 渲染文件预览
+        function renderFilePreviews() {
+            filePreviewContainer.innerHTML = '';
+            
+            selectedFiles.forEach((file, index) => {
+                const preview = document.createElement('div');
+                preview.className = 'file-preview';
+                
+                // 文件图标
+                const icon = document.createElement('div');
+                icon.innerHTML = getFileIcon(file);
+                preview.appendChild(icon);
+                
+                // 文件名
+                const name = document.createElement('div');
+                name.className = 'file-preview-name';
+                name.textContent = file.name;
+                preview.appendChild(name);
+                
+                // 上传状态
+                const status = document.createElement('div');
+                status.className = 'file-preview-status';
+                status.textContent = '解析成功';
+                preview.appendChild(status);
+                
+                // 删除按钮
+                const remove = document.createElement('div');
+                remove.className = 'file-preview-remove';
+                remove.innerHTML = '&times;';
+                remove.addEventListener('click', () => {
+                    selectedFiles.splice(index, 1);
+                    fileContentsCache.splice(index, 1);
+                    renderFilePreviews();
+                    updateSendButtonState();
+                });
+                preview.appendChild(remove);
+                
+                filePreviewContainer.appendChild(preview);
+            });
+        }
+        
+        // 获取文件类型图标
+        function getFileIcon(file) {
+            const fileName = file.name || '';
+            const extension = fileName.split('.').pop().toLowerCase();
+            
+            const icons = {
+                image: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8.5 10C9.32843 10 10 9.32843 10 8.5C10 7.67157 9.32843 7 8.5 7C7.67157 7 7 7.67157 7 8.5C7 9.32843 7.67157 10 8.5 10Z" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 15L16 10L5 21" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                pdf: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2V8H20" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 12V18" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 12H12C12.5304 12 13.0391 12.2107 13.4142 12.5858C13.7893 12.9609 14 13.4696 14 14V14C14 14.5304 13.7893 15.0391 13.4142 15.4142C13.0391 15.7893 12.5304 16 12 16H10" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 12V18" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                text: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2V8H20" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 13H8" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 17H8" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 9H9H8" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+                default: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 2V8H20" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            };
+            
+            const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'];
+            if (imageExtensions.includes(extension)) return icons.image;
+            if (extension === 'pdf') return icons.pdf;
+            if (['txt', 'doc', 'docx', 'csv', 'md'].includes(extension)) return icons.text;
+            return icons.default;
+        }
+        
+        // 修改后的sendMessage函数
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message && fileContentsCache.length === 0) return;
+
+            // 添加用户消息到对话框
+            if (message) {
+                addMessage(message, 'user');
+            }
+
+            // 清空输入框
+            messageInput.value = '';
+            updateSendButtonState();
+
+            try {
+                // 准备请求数据
+                const requestData = {
+                    message: message,
+                    web_search: webSearchCheckbox.checked,
+                    contents: fileContentsCache
+                };
+
+                // 使用fetch API发送POST请求
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let partialLine = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = (partialLine + chunk).split('\n');
+                    partialLine = lines.pop() || '';
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.replace('data: ', '').trim();
+                            if (!data) continue;
+
+                            try {
+                                const parsed = JSON.parse(data);
+                                const messageContent = parsed.message || '';
+                                const modelInfo = parsed.model_info || null;
+                                
+                                // 为每个数据块创建独立消息
+                                addMessage(
+                                    messageContent, 
+                                    'bot', 
+                                    modelInfo || 'wangs (T1)'
+                                );
+                                
+                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                            } catch (e) {
+                                console.error('解析错误:', e);
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                const errorMessage = document.createElement('div');
+                errorMessage.classList.add('message', 'bot-message');
+                errorMessage.textContent = '请求失败: ' + error.message;
+                chatContainer.appendChild(errorMessage);
+            } finally {
+                // 清理状态
+                selectedFiles = [];
+                fileContentsCache = [];
+                renderFilePreviews();
+                updateSendButtonState();
+            }
+        }
+        
+        // 修改addMessage函数，使其更灵活
+        function addMessage(text, sender, modelInfo = null) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            
+            if (sender === 'bot') {
+                messageElement.innerHTML = `
+                    <div class="collapse-header">
+                        <span class="arrow">▼</span>
+                        <span class="summary">${generateSummary(text)}</span>
+                    </div>
+                    <div class="collapse-content">${formatContent(text)}</div>
+                    ${modelInfo ? `<div class="model-info">${modelInfo}</div>` : ''}
+                `;
+                
+                const header = messageElement.querySelector('.collapse-header');
+                header.addEventListener('click', () => {
+                    messageElement.classList.toggle('collapsed');
+                    updateArrow(header.querySelector('.arrow'), messageElement.classList.contains('collapsed'));
+                });
+                
+                messageElement.classList.add('collapsed');
+            } else {
+                messageElement.textContent = text;
+            }
+            
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            return messageElement;
+        }
+
+        // 生成摘要的辅助函数
+        function generateSummary(text) {
+            return text.split('\n')[0].substring(0, 50) + '...'; // 截取首行前50字符
+        }
+
+        // 格式化内容的辅助函数
+        function formatContent(text) {
+            return text.replace(/\n/g, '<br>').replace(/  /g, '&nbsp;&nbsp;');
+        }
+
+        // 更新箭头方向的函数
+        function updateArrow(arrowElement, isCollapsed) {
+            arrowElement.style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
+        }
+
+        // 显示正在输入指示器
+        function showTypingIndicator() {
+            const indicator = document.createElement('div');
+            indicator.classList.add('typing-indicator');
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('typing-dot');
+                indicator.appendChild(dot);
+            }
+            
+            chatContainer.appendChild(indicator);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            return indicator;
+        }
+        
+        // 移除正在输入指示器
+        function removeTypingIndicator(indicator) {
+            if (indicator && indicator.parentNode) {
+                indicator.parentNode.removeChild(indicator);
+            }
+        }
+        
+        // 点击发送按钮
+        sendButton.addEventListener('click', sendMessage);
+        
+        // 按Enter键发送消息 (Shift+Enter换行)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // 初始欢迎消息
+        window.addEventListener('DOMContentLoaded', () => {
+            addMessage('你好!开发者wangs,你可以上传文件后向我提问。', 'bot', 'wangs (T1)');
+        });
+    </script>
+</body>
+</html>

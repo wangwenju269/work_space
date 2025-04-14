@@ -409,7 +409,9 @@
 
 + **背景目的：**
 
-  本博客旨在构建一个智能化的文献数据收集系统，通过整合多种AI技术，实现从数据源发现、数据阅读、内容提取到知识入库的全流程自动化，为提供高效、准确、全面的文献数据支持。[整篇博客链接](https://mp.weixin.qq.com/s?__biz=Mzk0ODcyMTE3NQ==&mid=2247483978&idx=1&sn=32c9a6432d932c33fe97484d5a153463&chksm=c2b032bfa42322f5071a0231b35d1a52bed6b2cf007f4b38c38b8eadcca6972d38f8c9886f69&scene=126&sessionid=1740967821#rd)
+  本博客旨在构建一个智能化的文献数据收集系统，通过整合多种AI技术，实现从数据源发现、数据阅读、内容提取到知识入库的全流程自动化，为提供高效、准确、全面的文献数据支持。
+
+  [整篇博客链接](https://mp.weixin.qq.com/s?__biz=Mzk0ODcyMTE3NQ==&mid=2247483978&idx=1&sn=32c9a6432d932c33fe97484d5a153463&chksm=c2b032bfa42322f5071a0231b35d1a52bed6b2cf007f4b38c38b8eadcca6972d38f8c9886f69&scene=126&sessionid=1740967821#rd)
 
 + **Formulate**：
 
@@ -449,15 +451,19 @@
 
 + **角色和动作**
 
-  根据任务需求，系统主要涉及两个核心角色：**Reviewer（评审者）**和 **Writer撰写者**。其中，`Reviewer`负责数据的定位、筛选和入库，而`Writer`则负责基于检索到数据生成专业化的技术报告。
+  根据任务需求，系统主要涉及两个核心角色：**Reviewer（评审者）**和 **Writer撰写者**。其中，`Reviewer`负责数据的定位、筛选和入库，而`Writer`则负责基于检索到数据生成专业化报告。
 
-  1. **Reviewer（评审者）**：
+  1. **Reviewer**（评审者）：
 
      **职责**：负责从多源异构数据中定位、筛选和提取有用信息，为后续技术报告生成提供数据支持。**核心动作**：**SUMMARY**：基于关键要素生成搜索查询，定位语义相关的文档。**FULL_TEXT**：深入阅读整篇文档或者分块上下文窗口信息，评估其内容的有用性。**ADD_PAPER**：将相关文献及其提取的结构化数据入库。
 
-  2. **Writer（撰写者）**：
+  2. **Writer**（撰写者）：
 
-     职责：基于Reviewer提供的有效数据信息，生成逻辑清晰、内容准确的领域报告。以“"**数字化经济关于出口贸易影响**"”为例，直观感受下整体工作流运转模式，[展示地址](https://mmbiz.qpic.cn/sz_mmbiz_png/GLt9ia2KUZfNouJ0nNDmz6mkmuXCDB8CW4brzwIyicZu7KEkbxMX2n9YicxO1OMialhmVaSUYUwssyLG11L2lm3iaxg/640?wx_fmt=png&from=appmsg&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+     **职责**：基于`Reviewer`提供的有效数据信息，生成逻辑清晰、内容准确的领域报告。
+
++ **演示：**
+
+  
 
 ------
 

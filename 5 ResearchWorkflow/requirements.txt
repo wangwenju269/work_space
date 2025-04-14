@@ -1,0 +1,19 @@
+# requirements.txt
+Flask>=3.0.0
+Werkzeug>=3.0.0
+PyPDF2>=3.0.0
+python-docx>=0.8.1
+Pillow>=10.0.0
+pytesseract>=0.3.10
+arxiv>=2.1.0
+openai>=1.12.0
+pypdf>=3.17.0
+
+# 系统级依赖说明（需手动安装）：
+# Tesseract OCR 引擎
+# - Linux: sudo apt-get install tesseract-ocr
+# - Mac: brew install tesseract
+# - Windows: 从 https://github.com/UB-Mannheim/tesseract/wiki 下载安装
+# 中文语言包（如果需要识别中文）：
+# - Linux/Mac: sudo apt-get install tesseract-ocr-chi-sim
+# - Windows: 通过安装程序添加中文支持
