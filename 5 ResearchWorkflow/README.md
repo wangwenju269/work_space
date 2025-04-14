@@ -70,3 +70,14 @@ pip install -r requirements.txt
 └── templates/
     └── index.html      # 前端界面
 ```bash    
+
+```
+
+### 界面演示
+
+![界面1](./images/界面1.jpg)
+
+
+
+
+
