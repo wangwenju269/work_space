@@ -469,8 +469,9 @@
      **职责**：基于`Reviewer`提供的有效数据信息，生成逻辑清晰、内容准确的领域报告。
 
 + **演示**：
-
-  ​	[![B站演示视频]](https://www.bilibili.com/video/BV1xEoLYKE9F/?vd_source=706306506b99ad926de56d3de3f1dd26)
+```html
+<iframe src="//player.bilibili.com/player.html?isOutside=true&aid=114336106419879&bvid=BV1xEoLYKE9F&cid=29411837037&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"></iframe>
+```
 
 ------
 
