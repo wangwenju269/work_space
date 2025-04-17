@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 软文生成工具</title>
+    <style>
+        /* 基础样式 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f6fa;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        /* 输入区域样式 */
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #34495e;
+            font-weight: 600;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus,
+        select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        /* 按钮样式 */
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .primary-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .confirm-btn {
+            background: #27ae60;
+            color: white;
+            display: block;
+            width: 200px;
+            margin: 1.5rem auto 0;
+        }
+
+        /* 输出区域 */
+        .output-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .section-heading {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        /* 标题卡片 */
+        .title-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .title-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .title-card.selected {
+            border-color: #3498db;
+            background: #f0f8ff;
+        }
+
+        .title-text {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .perspective-text {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            padding-left: 1rem;
+            border-left: 3px solid #3498db;
+        }
+
+        /* 生成文章区域 */
+        .article-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            margin-top: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* 加载动画 */
+        .loader {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* URL输入提示 */
+        .input-hint {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+            margin-top: 0.3rem;
+        }
+        /* 复制按钮样式 */
+        .copy-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        .section-heading {
+            position: relative;
+            padding-right: 120px; /* 给复制按钮留出空间 */
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 AI 软文生成工具</h1>
+
+        <!-- 输入区域 -->
+        <div class="input-group">
+            <label for="urls">🔗 新闻素材URL</label>
+            <textarea id="urls" rows="5" placeholder="示例：
+https://news.example.com/1
+https://news.example.com/2"></textarea>
+        </div>
+
+        <div class="input-group">
+            <label for="adContent">💼 广告内容</label>
+            <textarea id="adContent" rows="3" placeholder="请输入需要推广的产品或服务信息..."></textarea>
+        </div>
+
+        <div class="input-group">
+            <label for="style">🎨 选择写作风格</label>
+            <select id="style">
+                <option value="新闻">📰 新闻风格</option>
+                <option value="公文">📄 公文风格</option>
+                <option value="小红书">📕 小红书风格</option>
+                <option value="抖音">🎬 抖音口播</option>
+            </select>
+        </div>
+
+        <button class="primary-btn" onclick="generateTitles()">🚀 生成标题</button>
+
+        <!-- 标题输出区域 -->
+        <div class="output-section" id="titleOutput">
+            <h3 class="section-heading">生成的标题与视角</h3>
+            <div class="loader" id="titleLoader"></div>
+        </div>
+
+        <!-- 修改文章输出区域的HTML结构 -->
+        <div class="output-section" id="articleOutput">
+            <h3 class="section-heading">生成的文章
+                <button class="primary-btn copy-btn" onclick="copyArticle()">📋 复制内容</button>
+            </h3>
+            <div class="loader" id="articleLoader"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTitles = [];
+        let selectedIndex = -1;
+        let cachedContent = {};
+
+        // 显示/隐藏加载动画
+        function toggleLoader(elementId, show) {
+            const loader = document.getElementById(elementId);
+            if (loader) {
+                loader.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // 生成标题
+        async function generateTitles() {
+            try {
+                toggleLoader('titleLoader', true);
+                // 获取URL并处理成数组（按行分割，过滤空行和前后空格）
+                const urls = document.getElementById('urls').value
+                    .split('\n')
+                    .map(url => url.trim())
+                    .filter(url => url.length > 0);
+                
+                const data = {
+                    urls: urls,
+                    adContent: document.getElementById('adContent').value,
+                    style: document.getElementById('style').value
+                };
+
+                const response = await fetch('/generate/titles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) throw new Error('请求失败');
+                
+                const result = await response.json();
+                currentTitles = result.titles_perspectives || [];
+                selectedIndex = -1;
+
+                renderTitles();
+            } catch (error) {
+                alert('生成失败，请检查输入内容');
+                console.error('生成标题错误:', error);
+            } finally {
+                toggleLoader('titleLoader', false);
+            }
+        }
+
+        // 渲染标题卡片
+        function renderTitles() {
+            const titleOutput = document.getElementById('titleOutput');
+            if (!titleOutput) return;
+
+            titleOutput.innerHTML = `
+                <h3 class="section-heading">生成的标题与视角</h3>
+                ${currentTitles.length > 0 ? 
+                    currentTitles.map((item, index) => `
+                        <div class="title-card ${index === selectedIndex ? 'selected' : ''}" 
+                             onclick="selectTitle(${index})">
+                            <div class="title-text">${index + 1}. ${item.title}</div>
+                            <div class="perspective-text">${item.perspective}</div>
+                        </div>
+                    `).join('') + 
+                    `<button class="confirm-btn" onclick="generateArticle()">✍️ 开始生成完整文章</button>`
+                    : '<p>没有生成可用的标题</p>'}
+            `;
+        }
+
+        // 选择标题
+        function selectTitle(index) {
+            if (index >= 0 && index < currentTitles.length) {
+                selectedIndex = index;
+                
+                // 更新UI
+                const titleCards = document.querySelectorAll('.title-card');
+                titleCards.forEach((card, i) => {
+                    card.classList.toggle('selected', i === index);
+                });
+                
+                // 清除之前的文章内容
+                clearArticleContent();
+            }
+        }
+
+        // 清除文章内容
+        function clearArticleContent() {
+            const articleOutput = document.getElementById('articleOutput');
+            if (articleOutput) {
+                articleOutput.innerHTML = `
+                    <h3 class="section-heading">生成的文章</h3>
+                `;
+            }
+        }
+
+        // 生成文章
+        async function generateArticle() {
+            if (selectedIndex === -1 || !currentTitles[selectedIndex]) {
+                alert('请先选择一个标题');
+                return;
+            }
+
+            try {
+                toggleLoader('articleLoader', true);
+                clearArticleContent();
+                
+                // 获取URL并处理成数组（按行分割，过滤空行和前后空格）
+                const urls = document.getElementById('urls').value
+                    .split('\n')
+                    .map(url => url.trim())
+                    .filter(url => url.length > 0);
+                
+                const selected = currentTitles[selectedIndex];
+                const data = {
+                    urls: urls,
+                    adContent: document.getElementById('adContent').value,
+                    style: document.getElementById('style').value,
+                    selectedTitle: selected.title,
+                    selectedPerspective: selected.perspective
+                };
+
+                const response = await fetch('/generate/articles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error('文章生成请求失败');
+                }
+                
+                const responseData = await response.json();
+                if (!responseData.article) {
+                    throw new Error('未获取到文章内容');
+                }
+                
+                renderArticle(responseData.article);
+            } catch (error) {
+                alert(`文章生成失败: ${error.message}`);
+                console.error('生成文章错误:', error);
+            } finally {
+                toggleLoader('articleLoader', false);
+            }
+        }
+
+        // 渲染文章内容
+        function renderArticle(articleContent) {
+            const articleOutput = document.getElementById('articleOutput');
+            if (!articleOutput) return;
+
+            // 使用marked解析Markdown
+            const htmlContent = marked.parse(articleContent);
+            
+            articleOutput.innerHTML = `
+                <h3 class="section-heading">生成的文章
+                    <button class="primary-btn copy-btn" onclick="copyArticle()">📋 复制内容</button>
+                </h3>
+                <div class="article-content">${htmlContent}</div>
+            `;
+        }
+
+        // 格式化文章内容
+        function formatArticle(text) {
+            if (!text) return '<p>无内容</p>';
+            
+            return text
+                .split('\n')
+                .filter(paragraph => paragraph.trim())
+                .map(paragraph => `<p>${paragraph}</p>`)
+                .join('');
+        }
+        // 复制文章内容
+        function copyArticle() {
+            const articleContent = document.querySelector('.article-content');
+            if (!articleContent) {
+                alert('请先生成文章内容');
+                return;
+            }
+
+            // 创建临时文本域
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = articleContent.textContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('内容已复制到剪贴板！');
+            } catch (err) {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动选择内容复制。');
+            } finally {
+                document.body.removeChild(tempTextArea);
+            }
+        }
+    </script>
+</body>
+</html>
