@@ -35,6 +35,7 @@
 - [**操作流程自动化agent**](#操作流程自动化agent)
 - [**Llama-index 搭建合同条款审查系统**](#Llama_index搭建合同条款审查系统)
 - [**文献收集开发小工具**](#文献收集开发小工具)
+- [**软文生产开发小工具**](https://github.com/wangwenju269/work_space/tree/main/%E8%BD%AF%E6%96%87%E5%86%99%E4%BD%9C%E5%BC%80%E5%8F%91%E5%B0%8F%E5%B7%A5%E5%85%B7)
 ------
 
 ##  智能文档一键生成
