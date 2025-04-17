@@ -46,9 +46,7 @@ python app.py
 复制文章: 点击 “复制内容” 按钮，可以将生成的文章内容复制到剪贴板。
 
 ## 演示
-
-
-
 ```html
 <iframe width="560" height="315" src="https://www.youtube.com/embed/H062GSYAqts?si=_I4fwq9WYm8-4haE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 ```
+<iframe width="560" height="315" src="https://www.youtube.com/embed/H062GSYAqts?si=_I4fwq9WYm8-4haE" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
