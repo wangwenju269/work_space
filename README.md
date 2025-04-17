@@ -421,6 +421,8 @@
 
   [整篇博客链接](https://mp.weixin.qq.com/s?__biz=Mzk0ODcyMTE3NQ==&mid=2247483978&idx=1&sn=32c9a6432d932c33fe97484d5a153463&chksm=c2b032bfa42322f5071a0231b35d1a52bed6b2cf007f4b38c38b8eadcca6972d38f8c9886f69&scene=126&sessionid=1740967821#rd)
 
+  [工具代码链接](https://github.com/wangwenju269/work_space/tree/main/%E6%96%87%E7%8C%AE%E6%94%B6%E9%9B%86%E5%BC%80%E5%8F%91%E5%B0%8F%E5%B7%A5%E5%85%B7)
+
 + **Formulate**：
 
   首先需要深入理解人类撰写领域报告的流程，并将其分解为可被AI系统执行的步骤。以下是优化后的任务流程描述及对应的流程图。
