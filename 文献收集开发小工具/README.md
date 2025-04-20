@@ -75,7 +75,7 @@ pip install -r requirements.txt
 
 ### 界面演示
 
-![界面1](./images/界面1.jpg)
+![演示](./文献收集开发工具.gif)
 
 
 
