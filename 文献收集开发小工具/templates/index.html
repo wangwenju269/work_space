@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文献深度搜索系统</title>
+    <title>深度搜索仿版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -48,9 +48,10 @@
             background-color: #1a73e8;
             color: white;
             border-bottom-right-radius: 4px;
+            margin-left: auto;
+            margin-right: 16px;  /* 增加右侧留白 */
+            max-width: calc(78% - 16px);  /* 补偿边距 */
         }
-        
-
         
         .input-container {
             padding: 12px 16px;
@@ -205,43 +206,6 @@
             gap: 8px;
         }
 
-        /* 在原有CSS中添加 */
-        .collapse-header {
-            cursor: pointer;
-            padding: 8px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .collapse-header:hover {
-            background-color: #ebebeb;
-        }
-
-        .collapse-content {
-            padding: 8px;
-            border-left: 2px solid #e5e5e6;
-            margin-left: 8px;
-        }
-
-        .arrow {
-            font-size: 12px;
-            transition: transform 0.2s;
-        }
-
-        .collapsed .arrow {
-            transform: rotate(-90deg);
-        }
-
-        .collapsed + .collapse-content {
-            display: none;
-        }   
-        
-        /* 改进折叠样式 */
         .collapse-header {
             padding: 8px 12px;
             background-color: #f8f9fa;
@@ -251,18 +215,29 @@
             gap: 8px;
             transition: background-color 0.2s;
             user-select: none;
+            cursor: pointer;
+            margin-bottom: 8px;
         }
 
         .collapse-header:hover {
             background-color: #e9ecef;
         }
 
+
+
         .arrow {
             font-size: 12px;
             transition: transform 0.2s ease;
             color: #666;
         }
+        .collapsed .arrow {
+            transform: rotate(-90deg);
+        }
 
+        .collapsed + .collapse-content {
+            display: none;
+        }   
+        
         .summary {
             flex: 1;
             color: #444;
@@ -276,6 +251,8 @@
             border-radius: 8px;
             line-height: 1.6;
             display: none;
+            border-left: 2px solid #e5e5e6;
+            margin-left: 8px;
         }
 
         .message:not(.collapsed) .collapse-content {
@@ -289,7 +266,6 @@
             text-align: right;
         }
 
-
         .message {
             max-width: 78%;
             min-width: 40%;  /* 添加最小宽度限制 */
@@ -298,13 +274,6 @@
             line-height: 1.5;
             position: relative;
             width: fit-content;
-        }
-
-        /* 调整用户消息的右边距 */
-        .user-message {
-            margin-left: auto;
-            margin-right: 16px;  /* 增加右侧留白 */
-            max-width: calc(78% - 16px);  /* 补偿边距 */
         }
 
         .bot-message {
@@ -327,17 +296,35 @@
             box-sizing: border-box;
             word-break: break-word;  /* 长单词自动换行 */
         }
+        /* 添加完成消息样式 */
+        .task-complete {
+            background-color: #e8f5e9 !important;
+            border-color: #c8e6c9 !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+
+        .complete-message {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            color: #2e7d32;
+        }
+
+        .checkmark {
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="header-title">文献深度搜索系统</div>
+        <div class="header-title">Open DeepSearch System</div>
     </div>
     
     <div class="chat-container" id="chatContainer">
         <!-- 消息将在这里动态添加 -->
     </div>
-    
     <div class="input-container">
         <div class="input-area">
             <div class="input-row">
@@ -360,6 +347,9 @@
                 <label class="option-checkbox">
                     <input type="checkbox" id="webSearchCheckbox"> 联网搜索
                 </label>
+                <label class="option-checkbox">
+                    <input type="checkbox" id="axiverSearchCheckbox"> 文献搜索
+                </label>
             </div>
             <div id="filePreviewContainer"></div>
         </div>
@@ -373,6 +363,7 @@
         const messageInput = document.getElementById('messageInput');
         const sendButton = document.getElementById('sendButton');
         const webSearchCheckbox = document.getElementById('webSearchCheckbox');
+        const axiverSearchCheckbox = document.getElementById('axiverSearchCheckbox');
         const fileUploadButton = document.getElementById('fileUploadButton');
         const fileInput = document.getElementById('fileInput');
         const filePreviewContainer = document.getElementById('filePreviewContainer');
@@ -537,6 +528,7 @@
                 const requestData = {
                     message: message,
                     web_search: webSearchCheckbox.checked,
+                    axiver_search: axiverSearchCheckbox.checked,   
                     contents: fileContentsCache
                 };
 
@@ -573,17 +565,20 @@
 
                             try {
                                 const parsed = JSON.parse(data);
-                                const messageContent = parsed.message || '';
-                                const modelInfo = parsed.model_info || null;
-                                
-                                // 为每个数据块创建独立消息
-                                addMessage(
-                                    messageContent, 
-                                    'bot', 
-                                    modelInfo || 'wangs (T1)'
-                                );
-                                
-                                chatContainer.scrollTop = chatContainer.scrollHeight;
+                                if (parsed.message) {
+                                    const messageType = parsed.message.type || '';
+                                    const messageContent = parsed.message || '';
+                                    const modelInfo = parsed.model_info || null;
+                                  
+                                    // 为每个数据块创建独立消息
+                                    addMessage(
+                                        messageContent, 
+                                        'bot', 
+                                        modelInfo || 'R1'
+                                    );
+                            
+                                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                                }
                             } catch (e) {
                                 console.error('解析错误:', e);
                             }
@@ -609,11 +604,21 @@
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', `${sender}-message`);
             
-            if (sender === 'bot') {
+            if (text.type === 'TASK_COMPLETE') {
+                messageElement.classList.add('message', 'bot-message', 'task-complete');
+                messageElement.innerHTML = `
+                    <div class="complete-message">
+                        <span class="checkmark">✅</span>
+                        <span>${text.content}</span>
+                    </div>
+                `;
+            }
+
+            else if (sender === 'bot') {
                 messageElement.innerHTML = `
                     <div class="collapse-header">
                         <span class="arrow">▼</span>
-                        <span class="summary">${generateSummary(text)}</span>
+                        <span class="summary">${show(text)}</span>
                     </div>
                     <div class="collapse-content">${formatContent(text)}</div>
                     ${modelInfo ? `<div class="model-info">${modelInfo}</div>` : ''}
@@ -636,16 +641,53 @@
             return messageElement;
         }
 
-        // 生成摘要的辅助函数
-        function generateSummary(text) {
-            return text.split('\n')[0].substring(0, 50) + '...'; // 截取首行前50字符
+        // 统一处理文本内容展示
+        function show(text) {
+            // 处理字符串类型
+            if (typeof text === 'string') {
+                const firstLine = text.split('\n')[0] || '';
+                const truncated = firstLine.substring(0, 50);
+                return `${truncated}${firstLine.length > 50 ? '...' : ''}`;
+            }
+
+            // 处理对象类型
+            if (text && typeof text === 'object') {
+                // 递归处理嵌套结构
+                if ('body' in text) return show(text.body);
+                if ('str' in text) return show(text.str);
+
+                // 按优先级处理不同属性
+                if (text.query) {
+                    const firstLine = text.query.split('\n')[0] || '';
+                    const truncated = firstLine.substring(0, 50);
+                    return `${text.type}-->[${truncated}${firstLine.length > 50 ? '...' : ''}]`;
+                }
+                else if (text.url) return `${text.type}-->[${text.url}]`;
+                else if (text.paper_id) return `${text.type}-->[${text.paper_id}]`;
+                else if (text.content) return (`${text.type}-->`+ text.content.split('\n')[0] || '').substring(0, 100); // 限制内容长度
+            }
+
+            // 默认返回值
+            return "";
         }
 
-        // 格式化内容的辅助函数
-        function formatContent(text) {
-            return text.replace(/\n/g, '<br>').replace(/  /g, '&nbsp;&nbsp;');
-        }
+        // 统一内容格式化处理
+        function formatContent(input) {
+            // 提取内容逻辑
+            const getContent = (obj) => 
+                obj.feedback ?? obj.content ?? obj.body ?? obj.str ?? JSON.stringify(obj);
 
+            // 类型安全处理
+            const content = typeof input === 'string' ? 
+                input : 
+                (input && typeof input === 'object' ? getContent(input) : String(input));
+
+            // 格式化处理
+            return content
+                .replace(/\n/g, '<br>')
+                .replace(/ {2}/g, '&nbsp;&nbsp;')
+                .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+        }
         // 更新箭头方向的函数
         function updateArrow(arrowElement, isCollapsed) {
             arrowElement.style.transform = isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
@@ -688,7 +730,7 @@
         
         // 初始欢迎消息
         window.addEventListener('DOMContentLoaded', () => {
-            addMessage('你好!开发者wangs,你可以上传文件后向我提问。', 'bot', 'wangs (T1)');
+            addMessage('你好!开发者wangs,你可以上传文件后向我提问。', 'bot', 'R1');
         });
     </script>
 </body>

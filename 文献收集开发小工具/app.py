@@ -1,141 +1,144 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, send_from_directory
+from flask_cors import CORS  # 添加CORS支持
 import time
 import os
 import json
+import logging
 from werkzeug.utils import secure_filename
-import PyPDF2
-from docx import Document
-from PIL import Image
-import pytesseract
-from search import ResearchWorkflow
-lab = ResearchWorkflow()
+from uuid import uuid4
+from search import ResearchWorkflow, AcademicWorkflow
+from utils import FileTextExtractor
+
+# 初始化基础组件
+extractor = FileTextExtractor()
+
+# 创建Flask应用
 app = Flask(__name__)
+CORS(app)  # 启用CORS支持
 
-# 配置文件上传
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'doc', 'docx'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# 配置参数
+app.config.update({
+    'UPLOAD_FOLDER': 'uploads',
+    'MAX_CONTENT_LENGTH': 100 * 1024 * 1024,  # 100MB限制
+    'ALLOWED_EXTENSIONS': set(['pdf', 'docx', 'txt', 'md']),
+    'SESSION_FILES': {}  # 临时存储会话文件
+})
 
-# 确保上传目录存在
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+# 配置日志
+logging.basicConfig(level=logging.INFO)
+logger = app.logger
 
+# 辅助函数
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-
-def extract_text_from_file(filepath, filename):
-    """根据文件类型提取文本内容"""
-    ext = filename.rsplit('.', 1)[1].lower()
-    text = ""
-    
-    try:
-        if ext == 'txt':
-            with open(filepath, 'r', encoding='utf-8') as f:
-                text = f.read()
-                
-        elif ext == 'pdf':
-            with open(filepath, 'rb') as f:
-                reader = PyPDF2.PdfReader(f)
-                for page in reader.pages:
-                    text += page.extract_text() + "\n"
-                    
-        elif ext in ('doc', 'docx'):
-            doc = Document(filepath)
-            for para in doc.paragraphs:
-                text += para.text + "\n"
-                
-        elif ext in ('png', 'jpg', 'jpeg', 'gif'):
-            # 使用OCR提取图片中的文字
-            img = Image.open(filepath)
-            text = pytesseract.image_to_string(img, lang='chi_sim+eng')
-            
-    except Exception as e:
-        print(f"Error extracting text from {filename}: {str(e)}")
-        return f"无法解析文件 {filename} (错误: {str(e)})"
-    
-    return text.strip()
-
+def generate_session_id():
+    return str(uuid4())
 
 @app.route('/')
 def index():
-    # 返回前端HTML页面
-    with open('templates/index.html', 'r', encoding='utf-8') as f:
-        return f.read()
+    return send_from_directory('templates', 'index.html')
 
-
-# 新增一个专门的文件上传和解析接口
 @app.route('/api/upload', methods=['POST'])
-def upload_files():
+def handle_upload():
+    """处理文件上传并创建会话"""
     if 'files' not in request.files:
-        return jsonify({'success': False, 'error': '没有文件上传'}), 400
-    
+        return jsonify({'error': 'No files part'}), 400
+
     files = request.files.getlist('files')
     if not files or all(file.filename == '' for file in files):
-        return jsonify({'success': False, 'error': '没有选择文件'}), 400
+        return jsonify({'error': 'No selected files'}), 400
+
+    session_id = generate_session_id()
+    session_files = []
     
-    filenames = []
-    file_contents = []
-    
-    for file in files:
-        if file and allowed_file(file.filename):
-            try:
-                filename = secure_filename(file.filename) or f'file_{int(time.time())}'
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-                file.save(filepath)
-                filenames.append(file.filename)
+    try:
+        for file in files:
+            if file and allowed_file(file.filename):
+                # 生成安全文件名
+                original_name = secure_filename(file.filename)
+                file_id = f"{int(time.time())}_{original_name}"
+                file_path = os.path.join(app.config['UPLOAD_FOLDER'], file_id)
                 
-                # 解析文件内容（即使不在前端显示，后端仍然需要解析）
-                combined_text = "上传的文件内容：\n\n"
-                content = extract_text_from_file(filepath, file.filename)
-                combined_text += f"=== 文件: {file.filename} ===\n"
-                combined_text += content + "\n\n"
-                file_contents.append({
-                    'filename': file.filename,
-                    'content': combined_text
+                # 保存文件
+                file.save(file_path)
+                
+                # 提取文本内容
+                content = extractor.extract_text(file_path)
+                session_files.append({
+                    'original_name': original_name,
+                    'file_path': file_path,
+                    'content': content
                 })
-            except Exception as e:
-                return jsonify({
-                    'success': False,
-                    'error': f'文件 {file.filename} 解析失败: {str(e)}'
-                }), 400
-    
-    if not filenames:
-        return jsonify({'success': False, 'error': '没有有效的文件被上传'}), 400
-    
-    return jsonify({
-        'success': True,
-        'filenames': filenames,
-        'contents': file_contents  # 虽然前端不显示，但后端仍然返回内容供后续处理
-    })
-
-
-# 修改原有的聊天接口，不再处理文件上传
-@app.route('/api/chat', methods=['POST'])  # 确保只允许POST方法
-def chat():
-    # 获取JSON格式的请求体
-    if not request.is_json:
-        return jsonify({'error': '请求必须是JSON格式'}), 400
-    
-    data = request.get_json()
-    user_message = data.get('message', '')
-    use_web_search = data.get('web_search', False)  #待实现
-    file_contents = data.get('contents', [])        #待实现  
-    
-    lab.research_topic = user_message
-    # 验证请求数据
-    if not user_message and not file_contents:
-        return jsonify({'error': '消息或文件不能为空'}), 400
-    
-    # 流式响应生成器
-    def generate():
         
-        for chunk in lab.literature_review() :
-            yield f"data: {json.dumps({'message': chunk},ensure_ascii=False)}\n\n"
-            
-        yield f"data: {json.dumps({'message': '已完成文献检索工作'},ensure_ascii=False)}\n\n"
+        # 创建会话记录
+        app.config['SESSION_FILES'][session_id] = {
+            'files': session_files,
+            'created_at': time.time()
+        }
+        
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'filenames': [f['original_name'] for f in session_files]
+        })
+    
+    except Exception as e:
+        logger.error(f"File processing failed: {str(e)}")
+        return jsonify({'error': 'File processing failed'}), 500
 
-    return Response(generate(), mimetype='text/event-stream')
+@app.route('/api/chat', methods=['POST'])
+def handle_chat():
+    """处理聊天请求"""
+    data = request.get_json()
+    user_message = data['message']
+    use_web_search = data.get('web_search', False)
+    use_axiver_search = data.get('axiver_search', False)
+    if use_web_search:
+        search_workflow = ResearchWorkflow(max_steps=15)
+    elif use_axiver_search:     
+        search_workflow = AcademicWorkflow(max_steps=15)
+    
+    def _format_message(content):
+        """统一格式化消息为SSE格式"""
+        return f"data: {json.dumps({'message': content}, ensure_ascii=False)}\n\n"  
+       
+    def generate_stream():
+            try:
+                for chunk in search_workflow.run(research_topic=user_message):
+                    yield _format_message(chunk)
+                
+                # 生成最终分析报告
+                report_content = search_workflow.generate_llm_report()
+                yield _format_message({
+                        'type': 'FINAL_REPORT',
+                        'content': report_content
+                })
+                
+            except Exception as e:
+                logger.error(f"Stream generation failed: {str(e)}")
+                yield _format_message({
+                        'type': 'ERROR',
+                        'content': f'处理请求时发生错误：{str(e)}'
+                }) 
+                
+            yield _format_message({
+                        'type': 'TASK_COMPLETE',
+                        'content': '✅ 任务已完成'
+                })    
+           
+    return Response(
+        generate_stream(),
+        mimetype='text/event-stream'
+    )
+
+@app.route('/uploads/<filename>')
+def serve_file(filename):
+    """文件访问端点"""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0',port=7862)
+    # 确保上传目录存在
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    app.run(host='0.0.0.0', port=7862, debug=True)
